@@ -1,0 +1,3711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StudyDeck — Schoology Study Planner</title>
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --bg-elev: #ffffff;
+    --bg-soft: #eef0f6;
+    --border: #e3e6ef;
+    --text: #1a1d2b;
+    --text-soft: #5b6073;
+    --text-faint: #8a8fa3;
+    --accent: #5b6cff;
+    --accent-soft: #e9ecff;
+    --danger: #ef4a5a;
+    --warn: #f5a524;
+    --ok: #22c55e;
+    --info: #0ea5e9;
+    --shadow: 0 4px 20px rgba(20,20,40,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1120;
+    --bg-elev: #171a2e;
+    --bg-soft: #1f2340;
+    --border: #2b3056;
+    --text: #eef0ff;
+    --text-soft: #b2b7d4;
+    --text-faint: #7d82a3;
+    --accent: #8a97ff;
+    --accent-soft: #2a2f63;
+    --shadow: 0 4px 20px rgba(0,0,0,0.35);
+  }
+  [data-accent="violet"] { --accent: #8b5cf6; --accent-soft: #ede9fe; }
+  [data-accent="violet"][data-theme="dark"] { --accent-soft: #3a2a66; }
+  [data-accent="green"]  { --accent: #16a34a; --accent-soft: #dcfce7; }
+  [data-accent="green"][data-theme="dark"]  { --accent-soft: #123d20; }
+  [data-accent="pink"]   { --accent: #ec4899; --accent-soft: #fce7f3; }
+  [data-accent="pink"][data-theme="dark"]   { --accent-soft: #55123b; }
+  [data-accent="orange"] { --accent: #ea580c; --accent-soft: #ffedd5; }
+  [data-accent="orange"][data-theme="dark"] { --accent-soft: #5a2610; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font-family: inherit; color: inherit; }
+  button { cursor: pointer; border: none; background: transparent; }
+  a { color: var(--accent); }
+
+  /* Layout */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+  .sidebar {
+    background: var(--bg-elev);
+    border-right: 1px solid var(--border);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .brand-logo {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    display: grid; place-items: center;
+    color: white; font-weight: 800; font-size: 18px;
+  }
+  .brand-name { font-weight: 700; font-size: 17px; }
+  .brand-sub { font-size: 11px; color: var(--text-faint); }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-soft);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-item:hover { background: var(--bg-soft); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-divider {
+    font-size: 11px;
+    color: var(--text-faint);
+    padding: 18px 12px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .main {
+    padding: 28px 36px 60px;
+    max-width: 1200px;
+    width: 100%;
+  }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .page-title { font-size: 26px; font-weight: 700; margin: 0; }
+  .page-sub { color: var(--text-soft); font-size: 14px; margin-top: 4px; }
+
+  .btn {
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 13px;
+    transition: 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: var(--bg-soft); color: var(--text); }
+  .btn-ghost:hover { background: var(--border); }
+  .btn-outline { border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { padding: 5px 9px; font-size: 12px; }
+
+  /* Cards & grid */
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 64px 1fr; }
+    .sidebar { padding: 14px 6px; }
+    .nav-item-label, .brand-name, .brand-sub, .nav-divider { display: none; }
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .main { padding: 20px 16px 60px; }
+  }
+
+  /* Stat cards */
+  .stat-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-label { color: var(--text-soft); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-top: 6px; }
+  .stat-sub { color: var(--text-faint); font-size: 12px; margin-top: 4px; }
+
+  /* Assignment list */
+  .task {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: 0.15s;
+    border-left: 4px solid var(--border);
+  }
+  .task:hover { border-color: var(--accent); }
+  .task.priority-high { border-left-color: var(--danger); }
+  .task.priority-med  { border-left-color: var(--warn); }
+  .task.priority-low  { border-left-color: var(--ok); }
+  .task.completed { opacity: 0.55; }
+  .task.completed .task-title { text-decoration: line-through; }
+  .task-row { display: flex; align-items: center; gap: 10px; }
+  .task-check {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.15s;
+    color: white;
+    font-size: 13px;
+  }
+  .task-check.checked { background: var(--accent); border-color: var(--accent); }
+  .task-title { font-weight: 600; font-size: 15px; flex: 1; }
+  .task-meta { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding-left: 30px; flex-wrap: wrap; }
+  .chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-weight: 600;
+    background: var(--bg-soft);
+    color: var(--text-soft);
+  }
+  .chip-due { background: var(--accent-soft); color: var(--accent); }
+  .chip-overdue { background: #fde7ea; color: var(--danger); }
+  [data-theme="dark"] .chip-overdue { background: #4a1a22; }
+  .chip-class { color: white; }
+  .task-actions { display: flex; gap: 4px; margin-left: auto; }
+  .task-actions button {
+    color: var(--text-faint);
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .task-actions button:hover { background: var(--bg-soft); color: var(--text); }
+
+  /* Subtasks */
+  .subtasks {
+    margin: 8px 0 0 30px;
+    padding-left: 14px;
+    border-left: 2px solid var(--border);
+  }
+  .subtask {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    font-size: 13px;
+    color: var(--text-soft);
+  }
+  .subtask.completed { text-decoration: line-through; opacity: 0.6; }
+  .subtask-check {
+    width: 15px; height: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white; font-size: 10px;
+  }
+  .subtask-check.checked { background: var(--accent); border-color: var(--accent); }
+  .subtask-text { flex: 1; }
+  .subtask-remove {
+    color: var(--text-faint);
+    font-size: 14px;
+    padding: 0 4px;
+  }
+  .subtask-add {
+    display: flex; gap: 6px; margin-top: 6px;
+  }
+  .subtask-add input {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    font-size: 12px;
+  }
+
+  /* Modals */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10, 12, 24, 0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--bg-elev);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
+  .modal-close { float: right; font-size: 22px; color: var(--text-faint); }
+
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 6px; font-weight: 600; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .form-textarea { resize: vertical; min-height: 70px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Calendar */
+  .cal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .cal-month { font-size: 18px; font-weight: 700; }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-dow {
+    font-size: 11px; color: var(--text-faint);
+    text-align: center; padding: 6px;
+    font-weight: 600; text-transform: uppercase;
+  }
+  .cal-day {
+    background: var(--bg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    min-height: 80px;
+    padding: 6px;
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    transition: 0.15s;
+    overflow: hidden;
+  }
+  .cal-day:hover { border-color: var(--accent); }
+  .cal-day.other-month { opacity: 0.35; }
+  .cal-day.today { background: var(--accent-soft); }
+  .cal-day.today .cal-date { color: var(--accent); font-weight: 700; }
+  .cal-date { font-size: 12px; color: var(--text-soft); margin-bottom: 3px; }
+  .cal-dot {
+    font-size: 10px; padding: 1px 5px;
+    border-radius: 4px; margin-bottom: 2px;
+    background: var(--accent); color: white;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Pomodoro */
+  .pomo-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 30px 20px;
+  }
+  .pomo-timer {
+    font-size: 72px; font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 18px;
+  }
+  .pomo-mode {
+    font-size: 14px; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 22px;
+    font-weight: 600;
+  }
+  .pomo-controls { display: flex; gap: 10px; margin-bottom: 24px; }
+  .pomo-bar {
+    width: 100%; max-width: 400px; height: 8px;
+    background: var(--bg-soft); border-radius: 100px;
+    overflow: hidden;
+  }
+  .pomo-fill {
+    height: 100%; background: var(--accent);
+    transition: width 0.5s;
+  }
+  .pomo-sessions {
+    margin-top: 20px;
+    font-size: 13px; color: var(--text-soft);
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-soft);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-title { font-weight: 600; margin-bottom: 6px; }
+
+  /* Filters */
+  .filters {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-chip {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+  .filter-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* Notes */
+  .notes-area {
+    margin-top: 10px;
+    padding-left: 30px;
+  }
+  .notes-area textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--bg);
+    resize: vertical;
+    min-height: 50px;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 6px; background: var(--bg-soft);
+    border-radius: 100px; overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent);
+    transition: width 0.4s;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--text);
+    color: var(--bg);
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Segmented */
+  .segmented {
+    display: inline-flex; padding: 3px;
+    background: var(--bg-soft);
+    border-radius: var(--radius-sm);
+  }
+  .segmented button {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+  .segmented button.active {
+    background: var(--bg-elev);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  /* Color palette row */
+  .palette { display: flex; gap: 8px; margin-top: 8px; }
+  .swatch {
+    width: 26px; height: 26px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: 0.15s;
+  }
+  .swatch.active { border-color: var(--text); transform: scale(1.1); }
+
+  /* Classes pill on sidebar */
+  .class-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 6px;
+    font-size: 13px; color: var(--text-soft);
+    cursor: pointer;
+  }
+  .class-pill:hover { background: var(--bg-soft); color: var(--text); }
+  .class-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Streak */
+  .streak-days { display: flex; gap: 6px; margin-top: 10px; }
+  .streak-day {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-faint);
+  }
+  .streak-day.done { background: var(--ok); color: white; }
+
+  .link-btn {
+    color: var(--accent); font-weight: 600;
+    background: transparent; padding: 0;
+    font-size: 13px;
+  }
+  .link-btn:hover { text-decoration: underline; }
+
+  .help-text {
+    font-size: 12px; color: var(--text-faint);
+    margin-top: 6px; line-height: 1.5;
+  }
+  .help-text code {
+    background: var(--bg-soft); padding: 1px 5px;
+    border-radius: 4px; font-size: 11px;
+  }
+
+  /* Section */
+  .section-title {
+    font-size: 13px; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-weight: 700;
+    margin: 24px 0 10px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+
+  /* Hidden */
+  .hidden { display: none !important; }
+
+  /* File protocol banner */
+  .file-banner {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .file-banner-icon { font-size: 24px; }
+  .file-banner-text { flex: 1; line-height: 1.4; }
+  .file-banner-text b { font-weight: 700; }
+  .file-banner .btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(4px);
+  }
+  .file-banner .btn:hover { background: rgba(255,255,255,0.3); }
+
+  .server-instructions {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .server-instructions pre {
+    background: var(--bg-soft);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-x: auto;
+    user-select: all;
+  }
+  .server-instructions .method {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .server-instructions .method:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .server-instructions .method h4 { margin: 0 0 8px; font-size: 14px; }
+  .server-instructions code {
+    background: var(--bg-soft); padding: 2px 6px;
+    border-radius: 4px; font-size: 12px;
+  }
+
+  /* Guide page */
+  .guide-card { margin-bottom: 16px; line-height: 1.6; }
+  .guide-card h3 { font-size: 16px; margin-bottom: 10px; }
+  .guide-card p { color: var(--text-soft); margin: 8px 0; }
+  .guide-list {
+    margin: 8px 0 8px 18px;
+    padding: 0;
+    color: var(--text-soft);
+  }
+  .guide-list li { margin-bottom: 8px; }
+  .guide-list li b { color: var(--text); }
+  .guide-code {
+    background: var(--bg-soft);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 12px;
+    margin: 8px 0;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .guide-tip {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .guide-tip b { color: var(--accent); }
+  .guide-faq p { margin: 10px 0; }
+  .guide-faq b { color: var(--text); }
+  .guide-card code {
+    background: var(--bg-soft);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+  }
+
+  /* Collapsible details in import modal */
+  .import-help details {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    background: var(--bg);
+  }
+  .import-help details summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent);
+    user-select: none;
+    list-style: none;
+  }
+  .import-help details summary::before {
+    content: "▸ ";
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .import-help details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .import-help details .content {
+    margin-top: 10px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-soft);
+  }
+  .import-help details .content ol { padding-left: 18px; margin: 4px 0; }
+  .import-help details .content li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<!-- File protocol banner (only shows when running from file://) -->
+<div id="fileBanner" class="file-banner hidden">
+  <span class="file-banner-icon">⚠️</span>
+  <div class="file-banner-text">
+    <b>Schoology sync won't work from file://</b><br>
+    Your browser is blocking outgoing requests because you opened this file directly. Run a quick local server to fix it (takes 30 seconds).
+  </div>
+  <button class="btn" id="showServerHelp">How to fix</button>
+  <button class="btn" id="dismissBanner">Dismiss</button>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">S</div>
+      <div>
+        <div class="brand-name">StudyDeck</div>
+        <div class="brand-sub">Schoology planner</div>
+      </div>
+    </div>
+
+    <button class="nav-item active" data-view="dashboard">
+      <span class="icon">🏠</span><span class="nav-item-label">Dashboard</span>
+    </button>
+    <button class="nav-item" data-view="tasks">
+      <span class="icon">📋</span><span class="nav-item-label">Assignments</span>
+    </button>
+    <button class="nav-item" data-view="calendar">
+      <span class="icon">📅</span><span class="nav-item-label">Calendar</span>
+    </button>
+    <button class="nav-item" data-view="pomodoro">
+      <span class="icon">⏱️</span><span class="nav-item-label">Focus Timer</span>
+    </button>
+    <button class="nav-item" data-view="stats">
+      <span class="icon">📈</span><span class="nav-item-label">Progress</span>
+    </button>
+    <button class="nav-item" data-view="settings">
+      <span class="icon">⚙️</span><span class="nav-item-label">Settings</span>
+    </button>
+    <button class="nav-item" data-view="guide">
+      <span class="icon">📖</span><span class="nav-item-label">Import guide</span>
+    </button>
+    <button class="nav-item" data-view="faillog">
+      <span class="icon">🪵</span><span class="nav-item-label">Fail log</span>
+      <span id="failLogBadge" class="badge hidden" style="margin-left:auto;">0</span>
+    </button>
+    <button class="nav-item hidden" data-view="server" id="serverNavItem">
+      <span class="icon">🖥️</span><span class="nav-item-label">Run locally</span>
+    </button>
+
+    <div class="nav-divider nav-item-label">Classes</div>
+    <div id="classList"></div>
+
+    <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:6px; justify-content:center;">
+      <button class="btn btn-ghost btn-sm" id="themeToggle" title="Toggle theme">🌓</button>
+      <button class="btn btn-ghost btn-sm" id="exportBtn" title="Export data">⬇</button>
+      <button class="btn btn-ghost btn-sm" id="importBtn" title="Import data">⬆</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Good <span id="greetTime">afternoon</span>, <span id="greetName">student</span> 👋</h1>
+          <p class="page-sub" id="dashboardDate"></p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" id="importSchoologyBtn">📥 Import from Schoology</button>
+          <button class="btn btn-primary" id="addAssignmentBtn">＋ New assignment</button>
+        </div>
+      </div>
+
+      <div class="grid-4" id="statCards"></div>
+
+      <div class="grid-2" style="margin-top: 20px;">
+        <div>
+          <h3 class="section-title">Due this week</h3>
+          <div id="dueThisWeek"></div>
+        </div>
+        <div>
+          <h3 class="section-title">Focus streak</h3>
+          <div class="card">
+            <div class="stat-value" id="streakCount">0 days</div>
+            <div class="stat-sub">Completed at least one task today to keep your streak alive</div>
+            <div class="streak-days" id="streakRow"></div>
+          </div>
+          <h3 class="section-title">Today's progress</h3>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <span class="stat-value" id="todayDone">0/0</span>
+              <span class="stat-sub" id="todayPct">0%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="todayProgress" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSIGNMENTS -->
+    <section class="view hidden" id="view-tasks">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Assignments</h1>
+          <p class="page-sub">All your tasks from Schoology and ones you've added.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" id="importSchoologyBtn2">📥 Schoology</button>
+          <button class="btn btn-primary" id="addAssignmentBtn2">＋ New</button>
+        </div>
+      </div>
+      <div class="filters" id="filterBar">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="today">Today</button>
+        <button class="filter-chip" data-filter="week">This week</button>
+        <button class="filter-chip" data-filter="overdue">Overdue</button>
+        <button class="filter-chip" data-filter="done">Completed</button>
+        <input class="form-input" id="searchInput" placeholder="🔍 Search..." style="max-width:200px; margin-left:auto;">
+      </div>
+      <div id="taskList"></div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="view hidden" id="view-calendar">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Calendar</h1>
+          <p class="page-sub">Visual view of your due dates.</p>
+        </div>
+        <div class="segmented">
+          <button class="active" data-calview="month">Month</button>
+          <button data-calview="week">Week</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cal-header">
+          <button class="btn btn-ghost btn-sm" id="calPrev">◀</button>
+          <div class="cal-month" id="calMonth">—</div>
+          <button class="btn btn-ghost btn-sm" id="calNext">▶</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin: 24px 0 10px;">
+        <h3 class="section-title" id="calSelectedLabel" style="margin:0;">Select a day</h3>
+        <button class="btn btn-primary btn-sm" id="calAddForDay">＋ Add task for this day</button>
+      </div>
+      <div id="calDayTasks"></div>
+    </section>
+
+    <!-- POMODORO -->
+    <section class="view hidden" id="view-pomodoro">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Focus Timer</h1>
+          <p class="page-sub">Pomodoro technique — 25 min focus, 5 min break.</p>
+        </div>
+      </div>
+      <div class="card pomo-wrap">
+        <div class="pomo-mode" id="pomoMode">Focus</div>
+        <div class="pomo-timer" id="pomoTimer">25:00</div>
+        <div class="pomo-bar"><div class="pomo-fill" id="pomoFill" style="width:0%"></div></div>
+        <div class="pomo-controls" style="margin-top: 22px;">
+          <button class="btn btn-primary" id="pomoStart">▶ Start</button>
+          <button class="btn btn-ghost" id="pomoPause">⏸ Pause</button>
+          <button class="btn btn-outline" id="pomoReset">⟲ Reset</button>
+          <button class="btn btn-outline" id="pomoSkip">⏭ Skip</button>
+        </div>
+        <div class="pomo-sessions">
+          <span id="pomoSessionCount">0</span> focus sessions today · Total time: <span id="pomoTotalToday">0 min</span>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:18px;">
+        <div class="card">
+          <h3 style="margin-top:0;">Timer settings</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Focus (min)</label>
+              <input type="number" class="form-input" id="pomoFocusMin" value="25" min="1" max="120">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Break (min)</label>
+              <input type="number" class="form-input" id="pomoBreakMin" value="5" min="1" max="60">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Long break every N focus sessions</label>
+            <input type="number" class="form-input" id="pomoLongEvery" value="4" min="2" max="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Long break (min)</label>
+            <input type="number" class="form-input" id="pomoLongMin" value="15" min="5" max="60">
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">Linked assignment</h3>
+          <p class="help-text" style="margin-bottom:10px;">Pick a task to log focus time against.</p>
+          <select class="form-select" id="pomoTaskLink">
+            <option value="">— None —</option>
+          </select>
+          <div style="margin-top: 14px;">
+            <h4 style="margin-bottom:6px; font-size:13px;">Recent sessions</h4>
+            <div id="pomoHistory" style="font-size:13px; color:var(--text-soft);"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view hidden" id="view-stats">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Progress</h1>
+          <p class="page-sub">How things are going.</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select class="form-select" id="statsClassFilter" style="max-width:200px;">
+            <option value="all">All classes</option>
+          </select>
+          <div class="segmented" id="statsRange">
+            <button data-range="week" class="active">This week</button>
+            <button data-range="month">This month</button>
+            <button data-range="all">All time</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-4" id="statsCards"></div>
+
+      <h3 class="section-title">Completion by class</h3>
+      <div class="card" id="byClassBreakdown"></div>
+
+      <h3 class="section-title">Last 14 days</h3>
+      <div class="card">
+        <div id="activityChart" style="display:flex; align-items:flex-end; gap:6px; height:140px;"></div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-faint); margin-top:6px;">
+          <span>14 days ago</span><span>Today</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view hidden" id="view-settings">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Settings</h1>
+          <p class="page-sub">Customize your planner.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Profile</h3>
+          <div class="form-group">
+            <label class="form-label">Your name</label>
+            <input type="text" class="form-input" id="settingsName" placeholder="Your name">
+          </div>
+          <button class="btn btn-primary btn-sm" id="saveProfile">Save</button>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Appearance</h3>
+          <div class="form-group">
+            <label class="form-label">Theme</label>
+            <div class="segmented">
+              <button data-theme-pick="light">Light</button>
+              <button data-theme-pick="dark">Dark</button>
+              <button data-theme-pick="auto">Auto</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Accent color</label>
+            <div class="palette">
+              <div class="swatch" data-accent-pick="default" style="background:#5b6cff;"></div>
+              <div class="swatch" data-accent-pick="violet" style="background:#8b5cf6;"></div>
+              <div class="swatch" data-accent-pick="green"  style="background:#16a34a;"></div>
+              <div class="swatch" data-accent-pick="pink"   style="background:#ec4899;"></div>
+              <div class="swatch" data-accent-pick="orange" style="background:#ea580c;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Notifications</h3>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div>
+              <div style="font-weight:600;">Browser notifications</div>
+              <div class="help-text">Reminders 1 hour before due tasks.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" id="enableNotifs">Enable</button>
+          </div>
+          <div id="notifStatus" class="help-text"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Classes</h3>
+          <p class="help-text" style="margin-bottom:10px;">Add your classes with colors so assignments are tagged.</p>
+          <div id="classManager"></div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <input type="text" class="form-input" id="newClassName" placeholder="Class name, e.g. Biology">
+            <input type="color" id="newClassColor" value="#5b6cff" style="width:50px; height:42px; border:1px solid var(--border); border-radius:6px; cursor:pointer;">
+            <button class="btn btn-primary" id="addClassBtn">Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">🎓 Schoology sync</h3>
+          <p class="help-text" style="margin-bottom:12px;">
+            Two sync methods — pick whichever works. Google Calendar bridge is the reliable one (no CORS issues).
+            <a href="#" id="openGuideFromSettings" class="link-btn">See full setup guide →</a>
+          </p>
+
+          <details open style="border:1px solid var(--accent); border-radius:8px; padding:12px; margin-bottom:12px; background: var(--accent-soft);">
+            <summary style="cursor:pointer; font-weight:700; font-size:13px; color:var(--accent);">
+              ⭐⭐ Apps Script bridge (easiest, most reliable)
+            </summary>
+            <div style="margin-top:12px;">
+              <p class="help-text" style="margin-bottom:10px;">
+                A tiny Google Apps Script acts as a bridge — no API key needed, no CORS issues.
+                <a href="#" id="openGuideFromSettings2" class="link-btn">Full setup →</a>
+              </p>
+              <div class="form-group">
+                <label class="form-label">Apps Script Web App URL</label>
+                <input type="text" class="form-input" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/..../exec">
+                <div class="help-text">Ends in <code>/exec</code>. From Deploy → New deployment → Web app → copy URL.</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-ghost btn-sm" id="saveAppsScriptBtn">Save</button>
+                <button class="btn btn-primary btn-sm" id="syncAppsScriptBtn">🔄 Sync via Apps Script</button>
+              </div>
+            </div>
+          </details>
+
+          <details style="border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <summary style="cursor:pointer; font-weight:600; font-size:13px; color:var(--accent);">
+              Google Calendar API (alternative)
+            </summary>
+            <div style="margin-top:12px;">
+              <p class="help-text" style="margin-bottom:10px;">
+                In Google Calendar, <b>Settings → Add calendar → From URL</b>, paste your Schoology iCal URL.
+                Make that calendar <b>public</b>. Then get a free Google API key at
+                <a href="https://console.cloud.google.com/apis/credentials" target="_blank">console.cloud.google.com/apis/credentials</a>
+                with the Calendar API enabled.
+              </p>
+              <div class="form-group">
+                <label class="form-label">Google API key</label>
+                <input type="text" class="form-input" id="googleApiKey" placeholder="AIza...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Public Calendar ID</label>
+                <input type="text" class="form-input" id="googleCalId" placeholder="abc123@group.calendar.google.com">
+                <div class="help-text">Get this from Google Calendar → Calendar Settings → "Integrate calendar" → Calendar ID.</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-ghost btn-sm" id="saveGoogleBtn">Save</button>
+                <button class="btn btn-primary btn-sm" id="syncGoogleBtn">🔄 Sync from Google</button>
+              </div>
+            </div>
+          </details>
+
+          <details style="border:1px solid var(--border); border-radius:8px; padding:12px;">
+            <summary style="cursor:pointer; font-weight:600; font-size:13px;">
+              Direct iCal URL (may hit CORS block)
+            </summary>
+            <div style="margin-top:12px;">
+              <p class="help-text" style="margin-bottom:10px;">
+                In Schoology: Calendar → ≡ menu → "iCal Feed". Works only if your school doesn't block cross-origin requests.
+              </p>
+              <div class="form-group">
+                <label class="form-label">Saved iCal URL</label>
+                <input type="text" class="form-input" id="savedIcalUrl" placeholder="https://schoology.com/…/schoology.ics">
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-ghost btn-sm" id="saveIcalUrl">Save URL</button>
+                <button class="btn btn-primary btn-sm" id="syncNow">🔄 Sync iCal</button>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Bulk clean-up</h3>
+          <p class="help-text">Quickly delete a lot of assignments at once. <b>These actions can't be undone</b> — export a backup first if you're unsure.</p>
+
+          <div style="margin-top: 14px; padding-bottom:14px; border-bottom: 1px solid var(--border);">
+            <div style="font-weight:600; margin-bottom:6px;">🗓 Delete past events</div>
+            <div class="help-text" style="margin-bottom:8px;">Remove assignments whose due date has already passed.</div>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-bottom:8px;">
+              <input type="checkbox" id="pastKeepIncomplete">
+              <span>Keep incomplete ones (only delete completed past events)</span>
+            </label>
+            <button class="btn btn-danger btn-sm" id="deletePastBtn">Preview &amp; delete past events</button>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <div style="font-weight:600; margin-bottom:6px;">🎯 Delete events from specific classes</div>
+            <div class="help-text" style="margin-bottom:8px;">Select one or more classes — all their assignments will be deleted.</div>
+            <div id="bulkClassList" style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;"></div>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-bottom:8px;">
+              <input type="checkbox" id="bulkOnlyCompleted">
+              <span>Only delete completed ones</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-bottom:8px;">
+              <input type="checkbox" id="bulkOnlySchoology">
+              <span>Only delete imported (🎓 Schoology) ones</span>
+            </label>
+            <button class="btn btn-danger btn-sm" id="deleteByClassBtn">Preview &amp; delete</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;">Data</h3>
+          <p class="help-text">Your data lives in this browser's local storage. Export it as a backup.</p>
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" id="exportBtn2">Export backup (.json)</button>
+            <button class="btn btn-outline btn-sm" id="importBtn2">Import backup</button>
+            <button class="btn btn-danger btn-sm" id="wipeBtn">Wipe all data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GUIDE -->
+    <section class="view hidden" id="view-guide">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">How to import from Schoology 📖</h1>
+          <p class="page-sub">Two reliable ways to get your assignments in — pick whichever works.</p>
+        </div>
+        <button class="btn btn-primary" id="openImportFromGuide">📥 Start import</button>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">🔑 Before you start</h3>
+        <p>Schoology doesn't offer a public API for students, but every account has a personal <b>iCal feed</b> — a read-only URL that contains all your calendar events (assignments, tests, due dates). That's what StudyDeck imports.</p>
+        <ul class="guide-list">
+          <li>The feed URL is unique to your account — don't share it publicly.</li>
+          <li>It's read-only, so StudyDeck can't accidentally change anything in Schoology.</li>
+          <li>Re-importing later only adds new items — no duplicates.</li>
+        </ul>
+      </div>
+
+      <div class="card guide-card" style="border-left: 4px solid var(--accent); background: var(--accent-soft);">
+        <h3 style="margin-top:0;">⭐⭐ Best method: Google Apps Script bridge</h3>
+        <p>A tiny Google Apps Script runs as you and serves your calendar data as JSON. <b>No API key, no CORS issues, no calendar-public requirement.</b> Takes ~3 minutes to set up.</p>
+
+        <ol class="guide-list">
+          <li><b>Subscribe to Schoology in Google Calendar first.</b>
+            <a href="https://calendar.google.com" target="_blank">calendar.google.com</a> → "Other calendars" + → <b>From URL</b> → paste Schoology iCal URL. Wait a minute for Google to pull events.
+          </li>
+          <li><b>Find the subscribed calendar's ID.</b>
+            In Google Calendar, click the subscribed calendar → Settings → scroll to <b>Integrate calendar</b> → copy the <b>Calendar ID</b> (looks like <code>abc123@import.calendar.google.com</code>).
+          </li>
+          <li><b>Create the Apps Script.</b>
+            Go to <a href="https://script.google.com" target="_blank">script.google.com</a> → <b>New project</b>. Delete any sample code and paste:
+            <div class="guide-code" style="white-space:pre; font-size:11.5px; line-height:1.5;">function doGet() {
+  const calId = "<b>PASTE_YOUR_CALENDAR_ID_HERE</b>";
+  const calendar = CalendarApp.getCalendarById(calId);
+
+  const now = new Date();
+  const future = new Date(now.getTime() + (90 * 24 * 60 * 60 * 1000));
+  const events = calendar.getEvents(now, future);
+
+  const output = events.map(e =&gt; ({
+    title: e.getTitle(),
+    start: e.getStartTime(),
+    end: e.getEndTime(),
+    description: e.getDescription(),
+    location: e.getLocation()
+  }));
+
+  return ContentService.createTextOutput(JSON.stringify(output))
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+            Replace <code>PASTE_YOUR_CALENDAR_ID_HERE</code> with the ID you copied.
+          </li>
+          <li><b>Deploy it.</b>
+            Click <b>Deploy</b> → <b>New deployment</b>. Click the gear icon → select <b>Web app</b>. Fill in:
+            <ul class="guide-list" style="margin-top:4px;">
+              <li><b>Execute as:</b> Me</li>
+              <li><b>Who has access:</b> Anyone</li>
+            </ul>
+            Click <b>Deploy</b>. The first time you'll need to <b>Authorize access</b> (click through the "unsafe" warning — it's your own script). Copy the <b>Web App URL</b> (ends in <code>/exec</code>).
+          </li>
+          <li><b>Paste into StudyDeck.</b>
+            Settings → Apps Script bridge → paste the URL → <b>Save</b> → <b>🔄 Sync via Apps Script</b>. Done.
+          </li>
+        </ol>
+
+        <div class="guide-tip">
+          <b>Why it's the best:</b> The script runs with <i>your</i> Google permissions, so it can read any calendar you've subscribed to — no need to make it public. It returns JSON, which browsers handle without CORS. And to update later, just re-run Sync — the script pulls the latest events from Google (which pulled from Schoology a few hours earlier).
+        </div>
+        <div class="guide-tip" style="margin-top:8px;">
+          <b>Want more history?</b> Change <code>90</code> in the script to <code>365</code> to pull a full year, then click <b>Deploy</b> → <b>Manage deployments</b> → pencil icon → <b>New version</b> → Deploy.
+        </div>
+      </div>
+
+      <div class="card guide-card" style="border-left: 4px solid var(--accent);">
+        <h3 style="margin-top:0;">⭐ Alternative: Google Calendar API key</h3>
+        <p>This is the most reliable method because it bypasses the CORS block that most schools have. The idea:</p>
+        <ol class="guide-list">
+          <li><b>Subscribe to Schoology in Google Calendar.</b>
+            Go to <a href="https://calendar.google.com" target="_blank">calendar.google.com</a> → left sidebar "Other calendars" → <b>+</b> → <b>From URL</b>. Paste your Schoology iCal URL. Google fetches and refreshes it every few hours.</li>
+          <li><b>Make that calendar public.</b>
+            Click the three-dot menu next to it → <b>Settings and sharing</b>. Under "Access permissions" check <b>Make available to public</b> (see only free/busy is fine — we need the events). Save.
+          </li>
+          <li><b>Copy the Calendar ID.</b>
+            Scroll down to <b>Integrate calendar</b> and copy the long <b>Calendar ID</b> (looks like <code>abc123@group.calendar.google.com</code>).
+          </li>
+          <li><b>Create a free Google API key.</b>
+            Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">console.cloud.google.com/apis/credentials</a>, create a project, enable the <b>Google Calendar API</b>, then create an API key. Copy it.
+          </li>
+          <li><b>Paste both into StudyDeck.</b>
+            Settings → 🎓 Schoology sync → Google Calendar bridge. Paste key + ID. Click <b>Save</b> then <b>Sync from Google</b>. That's it.
+          </li>
+        </ol>
+        <div class="guide-tip">
+          <b>Why it works:</b> Google's servers (not your browser) fetch from Schoology. Google's API supports CORS, so StudyDeck can read it from your browser without any blocks. Google refreshes the data every few hours automatically — re-running Sync pulls the latest.
+        </div>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">Step 1 · Get your iCal feed URL from Schoology</h3>
+        <ol class="guide-list">
+          <li>Log in to Schoology on a computer (easier than mobile).</li>
+          <li>Click the <b>Calendar</b> icon in the top bar (looks like 📅).</li>
+          <li>Look at the <b>bottom-right corner</b> of the calendar page for the <b>iCal Feed</b> link. On some schools it's under a ≡ menu or a small gear icon instead.</li>
+          <li>Click it — a box pops up showing your personal feed URL. It looks something like:
+            <div class="guide-code">https://<i>yourschool</i>.schoology.com/iCal?user=<i>...</i>&amp;token=<i>...</i></div>
+          </li>
+          <li>Copy the entire URL.</li>
+        </ol>
+        <div class="guide-tip">
+          <b>Can't find iCal Feed?</b> Some schools disable the link. If so, skip to <a href="#" data-goto-method2>Method 2 below</a>.
+        </div>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">Step 2 · Method 1 — Paste the URL (easiest)</h3>
+        <ol class="guide-list">
+          <li>In StudyDeck, click <b>📥 Import from Schoology</b> (top of Dashboard or Assignments).</li>
+          <li>Paste your URL into the <b>"Option 1 — iCal feed URL"</b> box.</li>
+          <li>Click <b>Fetch feed</b>. StudyDeck will download the calendar.</li>
+          <li>Click <b>Parse &amp; import</b>.</li>
+          <li>Done! Your assignments appear in the Assignments tab, tagged 🎓 Schoology.</li>
+        </ol>
+        <div class="guide-tip">
+          <b>Tip:</b> Save the URL in <b>Settings → Schoology import</b>, then use <b>🔄 Sync now</b> anytime you want to pull fresh assignments.
+        </div>
+      </div>
+
+      <div class="card guide-card" id="method2">
+        <h3 style="margin-top:0;">Step 2 · Method 2 — Paste the file contents (if fetching fails)</h3>
+        <p>Some schools block outside apps from reading the feed directly (a CORS restriction). No problem — you can download it yourself and paste the contents.</p>
+        <ol class="guide-list">
+          <li>Paste your iCal URL directly into your browser's address bar and press Enter.</li>
+          <li>One of two things will happen:
+            <ul class="guide-list">
+              <li><b>Your browser shows text</b> starting with <code>BEGIN:VCALENDAR</code> — select all (<code>Ctrl/Cmd+A</code>), copy (<code>Ctrl/Cmd+C</code>).</li>
+              <li><b>Your browser downloads a .ics file</b> — open it with a text editor (Notepad, TextEdit) and copy everything.</li>
+            </ul>
+          </li>
+          <li>In StudyDeck, open the import dialog and paste the copied text into <b>"Option 2 — Paste .ics contents"</b>.</li>
+          <li>Click <b>Parse &amp; import</b>.</li>
+        </ol>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">Step 3 · What gets imported</h3>
+        <ul class="guide-list">
+          <li><b>Title</b> — the assignment name from Schoology</li>
+          <li><b>Due date &amp; time</b> — whatever Schoology has set</li>
+          <li><b>Class</b> — auto-detected from the event's category. If it's new, a class is created with a random color. You can rename it and change the color in <b>Settings → Classes</b>.</li>
+          <li><b>Description/notes</b> — copied into the Notes field</li>
+          <li><b>Priority</b> — defaults to Medium. Adjust per-assignment.</li>
+        </ul>
+        <p>Imported items get a <b>🎓 Schoology</b> tag. You can still add subtasks, notes, and priorities on top — those stay put on re-sync.</p>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">Keeping things in sync</h3>
+        <p>Schoology doesn't push updates — you have to pull. A few approaches:</p>
+        <ul class="guide-list">
+          <li><b>Manual:</b> Click <b>🔄 Sync now</b> in Settings whenever you want fresh data. Re-imports skip duplicates.</li>
+          <li><b>Routine:</b> Get in the habit of syncing once in the morning and once on Sunday evening.</li>
+          <li><b>Deleted in Schoology?</b> StudyDeck won't delete tasks you already have — delete them manually if needed.</li>
+        </ul>
+      </div>
+
+      <div class="card guide-card">
+        <h3 style="margin-top:0;">Troubleshooting</h3>
+        <div class="guide-faq">
+          <p><b>❓ "Fetch failed"</b><br>Your school blocks cross-origin requests. Use Method 2 (paste the text) instead.</p>
+          <p><b>❓ "No events found"</b><br>You probably pasted something that isn't an iCal file. Make sure the text starts with <code>BEGIN:VCALENDAR</code>.</p>
+          <p><b>❓ I don't see an iCal Feed link in Schoology</b><br>Your school admin may have disabled it. Contact a teacher or try logging in from a different account view (student vs. parent).</p>
+          <p><b>❓ Assignments are missing due dates</b><br>Events in Schoology without a due date (like announcements) are still imported but show as "No due date" — you can add a date manually.</p>
+          <p><b>❓ Imported to the wrong class</b><br>Open the assignment, click edit (✎), and change the class. You can also rename classes in Settings.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RUN LOCALLY / SERVER HELP -->
+    <section class="view hidden" id="view-server">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Run StudyDeck from a local server 🖥️</h1>
+          <p class="page-sub">Pick any one method — they all do the same thing. You only do this once.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--warn); margin-bottom: 16px; background: var(--accent-soft);">
+        <b>Why this is needed:</b> When you open <code>study-planner.html</code> by double-clicking it,
+        your browser treats it as an untrusted local file (<code>file:///...</code>) and blocks it from talking to external services like Google Apps Script.
+        Running a tiny local server changes the URL to <code>http://localhost:...</code> which the browser trusts.
+        Nothing is uploaded anywhere — the "server" just serves files from your own computer.
+      </div>
+
+      <div class="server-instructions">
+        <div class="method">
+          <h4>⭐ Method 1 — Python (simplest if you have it)</h4>
+          <p style="color:var(--text-soft); font-size:13px; margin:0 0 8px;">Python comes pre-installed on Mac & most Linux. On Windows, install it from <a href="https://www.python.org/downloads/" target="_blank">python.org</a> first (tick "Add to PATH" during install).</p>
+          <ol style="margin:0 0 10px 18px; padding:0; color:var(--text-soft); font-size:13px;">
+            <li>Open Terminal (Mac/Linux) or Command Prompt (Windows)</li>
+            <li>Navigate to the Study Planner folder:
+              <pre>cd "path/to/Study Planner"</pre>
+            </li>
+            <li>Run:<pre>python -m http.server 8000</pre>
+              <span style="font-size:12px;">(Try <code>python3</code> if <code>python</code> doesn't work)</span>
+            </li>
+            <li>Open in your browser: <code>http://localhost:8000/study-planner.html</code></li>
+          </ol>
+          <p style="margin:0; font-size:12px; color:var(--text-faint);">Stop the server by pressing <code>Ctrl+C</code> in the terminal.</p>
+        </div>
+
+        <div class="method">
+          <h4>🟢 Method 2 — Node.js (if you have it)</h4>
+          <ol style="margin:0 0 10px 18px; padding:0; color:var(--text-soft); font-size:13px;">
+            <li>Open Terminal / Command Prompt in the Study Planner folder</li>
+            <li>Run:<pre>npx serve</pre>(First time it'll ask to install — say yes)</li>
+            <li>Visit the <code>http://localhost:3000</code> URL it prints</li>
+          </ol>
+        </div>
+
+        <div class="method">
+          <h4>🔵 Method 3 — VS Code (if you use it)</h4>
+          <ol style="margin:0 0 10px 18px; padding:0; color:var(--text-soft); font-size:13px;">
+            <li>Install the <b>Live Server</b> extension (by Ritwick Dey)</li>
+            <li>Open the Study Planner folder in VS Code</li>
+            <li>Right-click <code>study-planner.html</code> → <b>Open with Live Server</b></li>
+            <li>Your browser opens automatically at <code>http://127.0.0.1:5500</code></li>
+          </ol>
+        </div>
+
+        <div class="method">
+          <h4>🌐 Method 4 — GitHub Pages (permanent, access from anywhere)</h4>
+          <ol style="margin:0 0 10px 18px; padding:0; color:var(--text-soft); font-size:13px;">
+            <li>Create a free GitHub account if you don't have one</li>
+            <li>Make a new <b>public</b> repo</li>
+            <li>Upload <code>study-planner.html</code> and rename it to <code>index.html</code></li>
+            <li>Go to repo Settings → Pages → set Source to <code>main</code> branch</li>
+            <li>Wait ~1 minute, then visit <code>https://yourusername.github.io/reponame/</code></li>
+          </ol>
+          <p style="margin:0; font-size:12px; color:var(--text-faint);">Bonus: your planner is now accessible from any device at that URL. Data still stays per-browser though.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">How do I know it worked?</h3>
+        <p style="color:var(--text-soft); font-size:13px;">
+          Look at your browser's address bar. If it starts with <code>http://</code> or <code>https://</code> — you're good, sync will work.<br>
+          If it still says <code>file:///</code> — the browser is still loading the file directly. Double-check you opened it via the <code>http://localhost:...</code> URL, not by double-clicking the file.
+        </p>
+        <p style="color:var(--text-soft); font-size:13px;">
+          Current status: <b id="protocolStatus">checking...</b>
+        </p>
+      </div>
+    </section>
+
+    <!-- FAIL LOG -->
+    <section class="view hidden" id="view-faillog">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Fail log 🪵</h1>
+          <p class="page-sub">Every sync or import attempt that fails gets captured here with the full reason.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline btn-sm" id="copyLogBtn">📋 Copy all</button>
+          <button class="btn btn-danger btn-sm" id="clearLogBtn">🗑 Clear log</button>
+        </div>
+      </div>
+      <div id="failLogList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Assignment Modal -->
+<div class="modal-backdrop" id="modalAssign">
+  <div class="modal">
+    <button class="modal-close" data-close>&times;</button>
+    <h3 class="modal-title" id="modalAssignTitle">New assignment</h3>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-input" id="f_title" placeholder="e.g. Read Chapter 7">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Class</label>
+        <select class="form-select" id="f_class"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="f_priority">
+          <option value="low">Low</option>
+          <option value="med" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Due date</label>
+        <input type="date" class="form-input" id="f_dueDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due time</label>
+        <input type="time" class="form-input" id="f_dueTime">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="f_notes" placeholder="Optional notes..."></textarea>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+      <button class="btn btn-ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="saveAssignBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-backdrop" id="modalImport">
+  <div class="modal">
+    <button class="modal-close" data-close>&times;</button>
+    <h3 class="modal-title">Import from Schoology</h3>
+    <p class="help-text" style="margin-bottom:14px;">
+      Three methods. Google bridge is most reliable. <a href="#" id="openFullGuide" class="link-btn">See full guide →</a>
+    </p>
+
+    <div style="padding: 10px 12px; background: var(--accent-soft); border-radius:8px; margin-bottom:10px; border:1px solid var(--accent);">
+      <div style="font-weight:700; font-size:13px; margin-bottom:6px;">⭐⭐ Apps Script bridge (easiest)</div>
+      <div class="help-text" style="margin-bottom:8px;">No API key, no CORS issues. Set up once in Settings.</div>
+      <button class="btn btn-primary btn-sm" id="modalSyncAppsScriptBtn">🔄 Sync via Apps Script</button>
+      <button class="btn btn-ghost btn-sm" id="modalOpenAppsScriptSettings">Configure</button>
+    </div>
+
+    <div style="padding: 10px 12px; background: var(--bg-soft); border-radius:8px; margin-bottom:16px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:6px;">Google Calendar API</div>
+      <div class="help-text" style="margin-bottom:8px;">Alternative — needs API key + public calendar.</div>
+      <button class="btn btn-outline btn-sm" id="modalSyncGoogleBtn">🔄 Sync from Google Calendar</button>
+      <button class="btn btn-ghost btn-sm" id="modalOpenGoogleSettings">Configure</button>
+    </div>
+
+    <div class="import-help">
+      <details>
+        <summary>Step-by-step: where to find your iCal URL in Schoology</summary>
+        <div class="content">
+          <ol>
+            <li>Log in to Schoology on a computer.</li>
+            <li>Click the <b>Calendar</b> icon in the top bar.</li>
+            <li>Look at the <b>bottom-right corner</b> for an <b>iCal Feed</b> link (sometimes under ≡ or a gear icon).</li>
+            <li>Copy the URL it shows — it'll look like <code>https://...schoology.com/iCal?...</code></li>
+            <li>Paste below.</li>
+          </ol>
+        </div>
+      </details>
+      <details>
+        <summary>If "Fetch feed" fails — how to use Option 2</summary>
+        <div class="content">
+          <ol>
+            <li>Paste your iCal URL into your browser's address bar and press Enter.</li>
+            <li>If the browser shows text starting with <code>BEGIN:VCALENDAR</code>, select all and copy.</li>
+            <li>If it downloads a .ics file, open it with Notepad/TextEdit and copy everything.</li>
+            <li>Paste into the Option 2 box below and click <b>Parse &amp; import</b>.</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Option 1 — iCal feed URL</label>
+      <input type="text" class="form-input" id="icalUrlInput" placeholder="https://schoology.com/iCal?code=…">
+      <div class="help-text">Tries to fetch directly. If your school blocks cross-origin requests, use Option 2 instead.</div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="fetchIcalBtn" style="margin-bottom: 18px;">Fetch feed</button>
+
+    <div class="form-group">
+      <label class="form-label">Option 2 — Paste .ics contents</label>
+      <textarea class="form-textarea" id="icalTextInput" style="min-height:140px; font-family: ui-monospace, monospace; font-size:12px;" placeholder="BEGIN:VCALENDAR..."></textarea>
+      <div class="help-text">Open the .ics URL in your browser, select all, copy and paste here.</div>
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="btn btn-ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="parseIcalBtn">Parse &amp; import</button>
+    </div>
+    <div id="importResult" class="help-text" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-backdrop" id="modalPreview">
+  <div class="modal" style="max-width: 720px;">
+    <button class="modal-close" data-close>&times;</button>
+    <h3 class="modal-title">Review import</h3>
+    <div id="previewBody"></div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:18px;">
+      <button class="btn btn-ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="confirmImportBtn">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal (custom, not browser native) -->
+<div class="modal-backdrop" id="modalConfirm">
+  <div class="modal" style="max-width: 460px;">
+    <h3 class="modal-title" id="confirmTitle">Are you sure?</h3>
+    <div id="confirmBody" style="font-size: 14px; color: var(--text-soft); line-height: 1.55;"></div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:18px;">
+      <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="importFile" accept="application/json" style="display:none;">
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =======================================================
+   StudyDeck — Schoology Study Planner
+   Single-file app. All data in localStorage.
+   ======================================================= */
+
+const LS_KEY = 'studydeck.v1';
+
+const defaultState = {
+  profile: { name: '' },
+  theme: 'auto',
+  accent: 'default',
+  classes: [
+    { id: 'c_general', name: 'General', color: '#5b6cff' }
+  ],
+  assignments: [],
+  pomodoro: {
+    focusMin: 25,
+    breakMin: 5,
+    longMin: 15,
+    longEvery: 4,
+    history: [] // {date, taskId, minutes, type}
+  },
+  savedIcalUrl: '',
+  googleApiKey: '',
+  googleCalId: '',
+  appsScriptUrl: '',
+  activity: {}, // YYYY-MM-DD -> { completed: n, focusMin: n }
+  failLog: [], // { id, timestamp, source, title, level, details }
+};
+
+let state = load();
+let editingId = null;
+let activeView = 'dashboard';
+let calCursor = new Date(); // focused month
+let selectedCalDate = toYMD(new Date());
+let filterMode = 'all';
+let searchQuery = '';
+
+/* ------------------ Storage ------------------ */
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return structuredClone(defaultState);
+    const parsed = JSON.parse(raw);
+    return { ...structuredClone(defaultState), ...parsed };
+  } catch(e) {
+    return structuredClone(defaultState);
+  }
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ------------------ Helpers ------------------ */
+function uid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+function toYMD(d) {
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fromYMD(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function fmtDateHuman(s) {
+  if (!s) return 'No due date';
+  const d = fromYMD(s);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  const yest = new Date(today); yest.setDate(today.getDate()-1);
+  if (sameDay(d, today)) return 'Today';
+  if (sameDay(d, tomorrow)) return 'Tomorrow';
+  if (sameDay(d, yest)) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+}
+function isOverdue(a) {
+  if (a.completed || !a.dueDate) return false;
+  const due = fromYMD(a.dueDate);
+  if (a.dueTime) {
+    const [h, m] = a.dueTime.split(':').map(Number);
+    due.setHours(h, m, 0, 0);
+  } else {
+    due.setHours(23, 59, 59, 999);
+  }
+  return due.getTime() < Date.now();
+}
+function classById(id) { return state.classes.find(c => c.id === id) || state.classes[0]; }
+function toast(msg, ms=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+}
+function escapeHtml(s) {
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ------------------ Theme ------------------ */
+function applyTheme() {
+  const theme = state.theme === 'auto'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : state.theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.setAttribute('data-accent', state.accent);
+  document.querySelectorAll('[data-theme-pick]').forEach(b => {
+    b.classList.toggle('active', b.dataset.themePick === state.theme);
+  });
+  document.querySelectorAll('[data-accent-pick]').forEach(b => {
+    b.classList.toggle('active', b.dataset.accentPick === state.accent);
+  });
+}
+
+/* ------------------ Navigation ------------------ */
+function setView(v) {
+  activeView = v;
+  document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+  document.getElementById('view-' + v).classList.remove('hidden');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === v);
+  });
+  renderView(v);
+}
+
+function renderView(v) {
+  if (v === 'dashboard') renderDashboard();
+  if (v === 'tasks') renderTasks();
+  if (v === 'calendar') renderCalendar();
+  if (v === 'pomodoro') renderPomodoro();
+  if (v === 'stats') renderStats();
+  if (v === 'settings') renderSettings();
+  if (v === 'faillog') renderFailLog();
+  if (v === 'server')  renderServerView();
+  renderClassesSidebar();
+  updateFailLogBadge();
+}
+
+function isFileProtocol() {
+  return location.protocol === 'file:';
+}
+
+function renderServerView() {
+  const el = document.getElementById('protocolStatus');
+  if (!el) return;
+  if (isFileProtocol()) {
+    el.innerHTML = '<span style="color:var(--danger)">❌ Running from file:// — sync blocked</span>';
+  } else {
+    el.innerHTML = `<span style="color:var(--ok)">✅ Running from ${location.protocol} — sync will work</span>`;
+  }
+}
+
+function initFileProtocolUI() {
+  const banner = document.getElementById('fileBanner');
+  const navItem = document.getElementById('serverNavItem');
+  if (isFileProtocol()) {
+    banner.classList.remove('hidden');
+    navItem.classList.remove('hidden');
+  }
+}
+
+/* ------------------ Fail Log ------------------ */
+function logFail(source, title, details) {
+  state.failLog = state.failLog || [];
+  state.failLog.unshift({
+    id: uid(),
+    timestamp: Date.now(),
+    source,
+    title: title || 'Error',
+    level: 'error',
+    details: typeof details === 'string' ? details : JSON.stringify(details, null, 2)
+  });
+  // Cap at 50 entries
+  if (state.failLog.length > 50) state.failLog.length = 50;
+  save();
+  updateFailLogBadge();
+}
+
+function logInfo(source, title, details) {
+  state.failLog = state.failLog || [];
+  state.failLog.unshift({
+    id: uid(),
+    timestamp: Date.now(),
+    source,
+    title: title || 'Info',
+    level: 'info',
+    details: typeof details === 'string' ? details : JSON.stringify(details, null, 2)
+  });
+  if (state.failLog.length > 50) state.failLog.length = 50;
+  save();
+  updateFailLogBadge();
+}
+
+function updateFailLogBadge() {
+  const badge = document.getElementById('failLogBadge');
+  if (!badge) return;
+  const unread = (state.failLog || []).filter(e => !e.read && e.level === 'error').length;
+  if (unread > 0) {
+    badge.textContent = unread;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function renderFailLog() {
+  const host = document.getElementById('failLogList');
+  const log = state.failLog || [];
+  // Mark all as read on open
+  log.forEach(e => e.read = true);
+  save();
+  updateFailLogBadge();
+
+  if (log.length === 0) {
+    host.innerHTML = `<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">No errors yet</div><div>Failed imports and syncs will show up here with details.</div></div>`;
+    return;
+  }
+
+  host.innerHTML = log.map(e => {
+    const d = new Date(e.timestamp);
+    const when = d.toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit' });
+    const isErr = e.level === 'error';
+    const accent = isErr ? 'var(--danger)' : 'var(--ok)';
+    const icon = isErr ? '❌' : 'ℹ️';
+    return `
+      <div class="card" style="border-left: 4px solid ${accent}; margin-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:14px;">${icon} ${escapeHtml(e.title)}</div>
+            <div style="font-size:11px; color:var(--text-faint); margin-top:2px;">
+              <span style="padding:1px 6px; background:var(--bg-soft); border-radius:4px; font-weight:600;">${escapeHtml(e.source)}</span>
+              · ${when}
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-copy-entry="${e.id}">📋 Copy</button>
+          <button class="btn btn-ghost btn-sm" data-remove-entry="${e.id}" title="Dismiss">×</button>
+        </div>
+        <pre style="margin-top:10px; padding:10px; background:var(--bg-soft); border-radius:6px; font-size:12px; line-height:1.5; white-space:pre-wrap; word-break:break-word; font-family: ui-monospace, Consolas, monospace; color:var(--text);">${escapeHtml(e.details)}</pre>
+      </div>
+    `;
+  }).join('');
+
+  host.querySelectorAll('[data-copy-entry]').forEach(b => {
+    b.onclick = () => {
+      const entry = log.find(x => x.id === b.dataset.copyEntry);
+      if (!entry) return;
+      const text = `[${new Date(entry.timestamp).toISOString()}] ${entry.source} — ${entry.title}\n${entry.details}`;
+      navigator.clipboard.writeText(text).then(() => toast('Copied entry')).catch(() => toast('Copy failed'));
+    };
+  });
+  host.querySelectorAll('[data-remove-entry]').forEach(b => {
+    b.onclick = () => {
+      state.failLog = state.failLog.filter(x => x.id !== b.dataset.removeEntry);
+      save(); renderFailLog();
+    };
+  });
+}
+
+/* ------------------ Dashboard ------------------ */
+function renderDashboard() {
+  const hour = new Date().getHours();
+  document.getElementById('greetTime').textContent =
+    hour < 5 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+  document.getElementById('greetName').textContent =
+    state.profile.name || 'student';
+  document.getElementById('dashboardDate').textContent =
+    new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+  const all = state.assignments;
+  const total = all.length;
+  const done = all.filter(a => a.completed).length;
+  const overdue = all.filter(a => isOverdue(a)).length;
+  const today = toYMD(new Date());
+  const dueToday = all.filter(a => a.dueDate === today && !a.completed).length;
+
+  const cards = [
+    { label: 'Due today', value: dueToday, sub: dueToday===0 ? 'Nothing due today 🎉' : 'Keep going!' },
+    { label: 'Total tasks', value: total, sub: `${done} completed` },
+    { label: 'Overdue', value: overdue, sub: overdue===0 ? 'All caught up' : 'Needs attention' },
+    { label: 'Classes', value: state.classes.length, sub: 'Active' },
+  ];
+  document.getElementById('statCards').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value">${c.value}</div>
+      <div class="stat-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // Due this week
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekLater = new Date(now); weekLater.setDate(now.getDate()+7);
+  const dueWeek = all
+    .filter(a => !a.completed && a.dueDate && fromYMD(a.dueDate) <= weekLater)
+    .sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
+  const dueHtml = dueWeek.length === 0
+    ? `<div class="empty"><div class="empty-icon">🌴</div><div class="empty-title">Nothing due this week!</div><div>Time to get ahead.</div></div>`
+    : dueWeek.slice(0, 6).map(a => renderTaskItem(a, true)).join('');
+  document.getElementById('dueThisWeek').innerHTML = dueHtml;
+  hookTaskListeners(document.getElementById('dueThisWeek'));
+
+  // Today progress
+  const todayAll = all.filter(a => a.dueDate === today);
+  const todayDone = todayAll.filter(a => a.completed).length;
+  const pct = todayAll.length ? Math.round(todayDone/todayAll.length*100) : 0;
+  document.getElementById('todayDone').textContent = `${todayDone}/${todayAll.length}`;
+  document.getElementById('todayPct').textContent = `${pct}%`;
+  document.getElementById('todayProgress').style.width = pct + '%';
+
+  // Streak
+  renderStreak();
+}
+
+function renderStreak() {
+  const days = [];
+  let streak = 0;
+  let breaking = false;
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = toYMD(d);
+    const done = (state.activity[key]?.completed || 0) > 0;
+    days.push({ d, key, done });
+    if (i === 0 && done) streak = 1;
+  }
+  // compute streak across all history
+  let cursor = new Date();
+  while (!breaking) {
+    const key = toYMD(cursor);
+    if ((state.activity[key]?.completed || 0) > 0) {
+      // ok
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      if (toYMD(cursor) === toYMD(new Date())) {
+        // today might not be done yet; don't break streak here
+        cursor.setDate(cursor.getDate() - 1);
+        continue;
+      }
+      breaking = true;
+    }
+    if (toYMD(cursor) < '2020-01-01') break;
+  }
+  // simpler streak count
+  streak = 0;
+  let c = new Date();
+  while ((state.activity[toYMD(c)]?.completed || 0) > 0) {
+    streak++;
+    c.setDate(c.getDate()-1);
+  }
+  document.getElementById('streakCount').textContent = streak + (streak===1?' day':' days');
+  document.getElementById('streakRow').innerHTML = days.map(x => `
+    <div class="streak-day ${x.done?'done':''}" title="${x.key}">
+      ${x.d.toLocaleDateString(undefined,{weekday:'narrow'})}
+    </div>
+  `).join('');
+}
+
+/* ------------------ Tasks View ------------------ */
+function bucketFor(a) {
+  if (a.completed) return 'completed';
+  if (!a.dueDate) return 'nodate';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate()+7);
+  const due = fromYMD(a.dueDate);
+  if (isOverdue(a)) return 'overdue';
+  if (sameDay(due, today)) return 'today';
+  if (sameDay(due, tomorrow)) return 'tomorrow';
+  if (due <= weekEnd) return 'week';
+  return 'later';
+}
+const BUCKET_META = {
+  overdue:   { title: '🚨 Overdue',       order: 0 },
+  today:     { title: '🔥 Today',         order: 1 },
+  tomorrow:  { title: '⏭ Tomorrow',       order: 2 },
+  week:      { title: '📅 This week',     order: 3 },
+  later:     { title: '🌱 Later',         order: 4 },
+  nodate:    { title: '❓ No due date',    order: 5 },
+  completed: { title: '✅ Completed',     order: 6 },
+};
+
+function renderTasks() {
+  const list = getFilteredAssignments();
+  const root = document.getElementById('taskList');
+
+  // Quick-add bar (always visible)
+  const quickAdd = `
+    <div class="card" style="padding:12px; margin-bottom:14px; display:flex; gap:8px; align-items:center;">
+      <input type="text" class="form-input" id="quickAddInput" placeholder="＋ Quick add — type a task and press Enter (e.g. 'Math homework tomorrow high')" style="flex:1;">
+      <select class="form-select" id="quickAddClass" style="max-width:160px;"></select>
+    </div>
+  `;
+
+  if (list.length === 0) {
+    root.innerHTML = quickAdd + `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No assignments match</div><div>Try a different filter, or quick-add one above.</div></div>`;
+    hookQuickAdd();
+    return;
+  }
+
+  // Group into buckets
+  const buckets = {};
+  list.forEach(a => {
+    const b = bucketFor(a);
+    buckets[b] = buckets[b] || [];
+    buckets[b].push(a);
+  });
+
+  // Sort inside each bucket: priority (high first) then due date then title
+  const prioRank = { high: 0, med: 1, low: 2 };
+  Object.keys(buckets).forEach(b => {
+    buckets[b].sort((a, c) => {
+      const pa = prioRank[a.priority] ?? 1;
+      const pc = prioRank[c.priority] ?? 1;
+      if (pa !== pc) return pa - pc;
+      const da = (a.dueDate || '9999') + (a.dueTime || '');
+      const dc = (c.dueDate || '9999') + (c.dueTime || '');
+      if (da !== dc) return da.localeCompare(dc);
+      return (a.title || '').localeCompare(c.title || '');
+    });
+  });
+
+  const bucketKeys = Object.keys(buckets).sort((a,b) => BUCKET_META[a].order - BUCKET_META[b].order);
+  const html = bucketKeys.map(b => `
+    <h3 class="section-title">${BUCKET_META[b].title} <span style="color:var(--text-faint); font-weight:500;">(${buckets[b].length})</span></h3>
+    ${buckets[b].map(a => renderTaskItem(a)).join('')}
+  `).join('');
+
+  root.innerHTML = quickAdd + html;
+  hookTaskListeners(root);
+  hookQuickAdd();
+}
+
+function hookQuickAdd() {
+  const input = document.getElementById('quickAddInput');
+  const sel = document.getElementById('quickAddClass');
+  if (!input || !sel) return;
+  sel.innerHTML = state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      quickAddTask(input.value.trim(), sel.value);
+      input.value = '';
+    }
+  };
+}
+
+function quickAddTask(text, classId) {
+  // parse simple NL: "Math homework tomorrow high"
+  let title = text;
+  let dueDate = null;
+  let priority = 'med';
+
+  const lower = ' ' + text.toLowerCase() + ' ';
+  const today = new Date();
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  const nextWeek = new Date(today); nextWeek.setDate(today.getDate()+7);
+
+  if (/\btoday\b/i.test(lower))    { dueDate = toYMD(today);    title = title.replace(/\btoday\b/i, ''); }
+  if (/\btomorrow\b/i.test(lower)) { dueDate = toYMD(tomorrow); title = title.replace(/\btomorrow\b/i, ''); }
+  if (/\bnext week\b/i.test(lower)){ dueDate = toYMD(nextWeek); title = title.replace(/\bnext week\b/i, ''); }
+
+  if (/\b(high|urgent|important)\b/i.test(lower)) { priority = 'high'; title = title.replace(/\b(high|urgent|important)\b/i, ''); }
+  else if (/\blow\b/i.test(lower))  { priority = 'low';  title = title.replace(/\blow\b/i, ''); }
+  else if (/\bmed(ium)?\b/i.test(lower)) { priority = 'med'; title = title.replace(/\bmed(ium)?\b/i, ''); }
+
+  title = title.replace(/\s+/g, ' ').trim();
+  if (!title) { toast('Title is empty'); return; }
+
+  state.assignments.push({
+    id: uid(),
+    title,
+    classId: classId || state.classes[0].id,
+    priority,
+    dueDate,
+    dueTime: null,
+    notes: '',
+    completed: false,
+    subtasks: [],
+    createdAt: Date.now(),
+    source: 'manual'
+  });
+  save();
+  renderTasks();
+  toast('Added: ' + title);
+}
+
+function getFilteredAssignments() {
+  const today = toYMD(new Date());
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekEnd = new Date(now); weekEnd.setDate(now.getDate()+7);
+  let list = state.assignments.slice();
+
+  if (filterMode === 'today') {
+    list = list.filter(a => !a.completed && a.dueDate === today);
+  } else if (filterMode === 'week') {
+    list = list.filter(a => {
+      if (a.completed || !a.dueDate) return false;
+      const d = fromYMD(a.dueDate);
+      return d >= now && d <= weekEnd;
+    });
+  } else if (filterMode === 'overdue') {
+    list = list.filter(a => isOverdue(a));
+  } else if (filterMode === 'done') {
+    list = list.filter(a => a.completed);
+  } else if (filterMode === 'all') {
+    list = list.filter(a => !a.completed);
+  } else if (filterMode.startsWith('class:')) {
+    const id = filterMode.split(':')[1];
+    list = list.filter(a => a.classId === id);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(a =>
+      (a.title||'').toLowerCase().includes(q) ||
+      (a.notes||'').toLowerCase().includes(q)
+    );
+  }
+  return list;
+}
+
+function renderTaskItem(a, compact=false) {
+  const cls = classById(a.classId);
+  const overdue = isOverdue(a);
+  const subtaskCount = (a.subtasks||[]).length;
+  const subtasksDone = (a.subtasks||[]).filter(s => s.done).length;
+  const prio = a.priority==='high' ? 'priority-high' : a.priority==='low' ? 'priority-low' : 'priority-med';
+  const dueChip = a.dueDate
+    ? `<span class="chip ${overdue?'chip-overdue':'chip-due'}">📅 ${fmtDateHuman(a.dueDate)}${a.dueTime?' '+a.dueTime:''}</span>`
+    : '';
+  const prioChip = `<span class="chip" style="background:${a.priority==='high'?'#fde7ea':a.priority==='med'?'#fef3c7':'#dcfce7'}; color:${a.priority==='high'?'#b91c1c':a.priority==='med'?'#92400e':'#166534'};">${a.priority.toUpperCase()}</span>`;
+  const classChip = `<span class="chip chip-class" style="background:${cls.color}">${escapeHtml(cls.name)}</span>`;
+  const subChip = subtaskCount>0 ? `<span class="chip">✓ ${subtasksDone}/${subtaskCount}</span>` : '';
+  const srcChip = a.source==='schoology' ? `<span class="chip">🎓 Schoology</span>` : '';
+
+  return `
+    <div class="task ${prio} ${a.completed?'completed':''}" data-id="${a.id}">
+      <div class="task-row">
+        <span class="task-check ${a.completed?'checked':''}" data-toggle="${a.id}">${a.completed?'✓':''}</span>
+        <div class="task-title">${escapeHtml(a.title)}</div>
+        <div class="task-actions">
+          ${compact?'':`<button data-expand="${a.id}" title="Details">▾</button>`}
+          <button data-edit="${a.id}" title="Edit">✎</button>
+          <button data-delete="${a.id}" title="Delete">🗑</button>
+        </div>
+      </div>
+      <div class="task-meta">
+        ${classChip}${dueChip}${prioChip}${subChip}${srcChip}
+      </div>
+      ${compact ? '' : `
+        <div class="subtasks" id="subs-${a.id}">
+          ${(a.subtasks||[]).map(s => `
+            <div class="subtask ${s.done?'completed':''}" data-sub="${s.id}">
+              <span class="subtask-check ${s.done?'checked':''}" data-sub-toggle="${a.id}|${s.id}">${s.done?'✓':''}</span>
+              <span class="subtask-text">${escapeHtml(s.text)}</span>
+              <button class="subtask-remove" data-sub-remove="${a.id}|${s.id}">×</button>
+            </div>
+          `).join('')}
+          <div class="subtask-add">
+            <input type="text" placeholder="＋ Add subtask..." data-sub-add="${a.id}">
+          </div>
+        </div>
+        ${a.notes ? `<div class="notes-area"><textarea data-notes="${a.id}" placeholder="Notes...">${escapeHtml(a.notes)}</textarea></div>` : `<div class="notes-area"><textarea data-notes="${a.id}" placeholder="Add notes...">${escapeHtml(a.notes||'')}</textarea></div>`}
+      `}
+    </div>
+  `;
+}
+
+function hookTaskListeners(root) {
+  root.querySelectorAll('[data-toggle]').forEach(el => el.onclick = () => toggleTask(el.dataset.toggle));
+  root.querySelectorAll('[data-edit]').forEach(el => el.onclick = () => openEditModal(el.dataset.edit));
+  root.querySelectorAll('[data-delete]').forEach(el => el.onclick = () => deleteTask(el.dataset.delete));
+  root.querySelectorAll('[data-sub-toggle]').forEach(el => el.onclick = () => {
+    const [aid, sid] = el.dataset.subToggle.split('|');
+    toggleSub(aid, sid);
+  });
+  root.querySelectorAll('[data-sub-remove]').forEach(el => el.onclick = () => {
+    const [aid, sid] = el.dataset.subRemove.split('|');
+    removeSub(aid, sid);
+  });
+  root.querySelectorAll('[data-sub-add]').forEach(el => {
+    el.onkeydown = (e) => {
+      if (e.key === 'Enter' && el.value.trim()) {
+        addSub(el.dataset.subAdd, el.value.trim());
+        el.value = '';
+      }
+    };
+  });
+  root.querySelectorAll('[data-notes]').forEach(el => {
+    el.onblur = () => saveNotes(el.dataset.notes, el.value);
+  });
+}
+
+function toggleTask(id) {
+  const a = state.assignments.find(x => x.id === id);
+  if (!a) return;
+  a.completed = !a.completed;
+  a.completedAt = a.completed ? Date.now() : null;
+  if (a.completed) bumpActivity('completed');
+  save(); renderView(activeView);
+}
+
+function deleteTask(id) {
+  const a = state.assignments.find(x => x.id === id);
+  if (!a) return;
+  askConfirm({
+    title: 'Delete this assignment?',
+    body: `<b>${escapeHtml(a.title)}</b><br>This can't be undone.`,
+    okText: 'Delete',
+    onOk: () => {
+      state.assignments = state.assignments.filter(x => x.id !== id);
+      save(); renderView(activeView);
+      toast('Deleted');
+    }
+  });
+}
+
+function addSub(aid, text) {
+  const a = state.assignments.find(x => x.id === aid);
+  if (!a) return;
+  a.subtasks = a.subtasks || [];
+  a.subtasks.push({ id: uid(), text, done: false });
+  save(); renderView(activeView);
+}
+function toggleSub(aid, sid) {
+  const a = state.assignments.find(x => x.id === aid);
+  if (!a) return;
+  const s = (a.subtasks||[]).find(x => x.id === sid);
+  if (!s) return;
+  s.done = !s.done;
+  save(); renderView(activeView);
+}
+function removeSub(aid, sid) {
+  const a = state.assignments.find(x => x.id === aid);
+  if (!a) return;
+  a.subtasks = (a.subtasks||[]).filter(x => x.id !== sid);
+  save(); renderView(activeView);
+}
+function saveNotes(aid, notes) {
+  const a = state.assignments.find(x => x.id === aid);
+  if (!a) return;
+  a.notes = notes;
+  save();
+}
+
+/* ------------------ Assignment modal ------------------ */
+function openNewModal() {
+  editingId = null;
+  document.getElementById('modalAssignTitle').textContent = 'New assignment';
+  document.getElementById('f_title').value = '';
+  populateClassSelect();
+  document.getElementById('f_class').value = state.classes[0].id;
+  document.getElementById('f_priority').value = 'med';
+  document.getElementById('f_dueDate').value = toYMD(new Date());
+  document.getElementById('f_dueTime').value = '';
+  document.getElementById('f_notes').value = '';
+  document.getElementById('modalAssign').classList.add('open');
+}
+function openEditModal(id) {
+  const a = state.assignments.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  populateClassSelect();
+  document.getElementById('modalAssignTitle').textContent = 'Edit assignment';
+  document.getElementById('f_title').value = a.title;
+  document.getElementById('f_class').value = a.classId;
+  document.getElementById('f_priority').value = a.priority;
+  document.getElementById('f_dueDate').value = a.dueDate || '';
+  document.getElementById('f_dueTime').value = a.dueTime || '';
+  document.getElementById('f_notes').value = a.notes || '';
+  document.getElementById('modalAssign').classList.add('open');
+}
+function populateClassSelect() {
+  const sel = document.getElementById('f_class');
+  sel.innerHTML = state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+}
+function saveFromModal() {
+  const title = document.getElementById('f_title').value.trim();
+  if (!title) { toast('Title is required'); return; }
+  const data = {
+    title,
+    classId: document.getElementById('f_class').value,
+    priority: document.getElementById('f_priority').value,
+    dueDate: document.getElementById('f_dueDate').value || null,
+    dueTime: document.getElementById('f_dueTime').value || null,
+    notes: document.getElementById('f_notes').value,
+  };
+  if (editingId) {
+    const a = state.assignments.find(x => x.id === editingId);
+    Object.assign(a, data);
+  } else {
+    state.assignments.push({
+      id: uid(),
+      ...data,
+      completed: false,
+      subtasks: [],
+      createdAt: Date.now(),
+      source: 'manual'
+    });
+  }
+  save();
+  document.getElementById('modalAssign').classList.remove('open');
+  renderView(activeView);
+  toast(editingId ? 'Updated' : 'Assignment added');
+}
+
+/* ------------------ Calendar ------------------ */
+function renderCalendar() {
+  const year = calCursor.getFullYear();
+  const month = calCursor.getMonth();
+  document.getElementById('calMonth').textContent = calCursor.toLocaleDateString(undefined, { month:'long', year:'numeric' });
+  const firstDay = new Date(year, month, 1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  const todayStr = toYMD(new Date());
+
+  for (let i = 0; i < 42; i++) {
+    const dayNum = i - startOffset + 1;
+    let d, otherMonth = false;
+    if (dayNum < 1) {
+      d = new Date(year, month-1, prevMonthDays + dayNum);
+      otherMonth = true;
+    } else if (dayNum > daysInMonth) {
+      d = new Date(year, month+1, dayNum - daysInMonth);
+      otherMonth = true;
+    } else {
+      d = new Date(year, month, dayNum);
+    }
+    const key = toYMD(d);
+    const isToday = key === todayStr;
+    const isSelected = key === selectedCalDate;
+    const tasks = state.assignments.filter(a => a.dueDate === key).slice(0, 3);
+    html += `
+      <div class="cal-day ${otherMonth?'other-month':''} ${isToday?'today':''}" data-caldate="${key}" style="${isSelected?'border-color:var(--accent);':''}">
+        <div class="cal-date">${d.getDate()}</div>
+        ${tasks.map(t => {
+          const c = classById(t.classId);
+          return `<div class="cal-dot" style="background:${c.color}; ${t.completed?'opacity:0.5;text-decoration:line-through;':''}" title="Click to edit: ${escapeHtml(t.title)}" data-cal-task="${t.id}">${escapeHtml(t.title)}</div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-caldate]').forEach(el => {
+    el.onclick = (e) => {
+      // If clicked on a task chip, edit that task; else select the day
+      const taskEl = e.target.closest('[data-cal-task]');
+      if (taskEl) {
+        e.stopPropagation();
+        openEditModal(taskEl.dataset.calTask);
+        return;
+      }
+      selectedCalDate = el.dataset.caldate;
+      renderCalendar();
+    };
+  });
+
+  // selected day tasks
+  document.getElementById('calSelectedLabel').textContent =
+    fmtDateHuman(selectedCalDate) + ' — ' + fromYMD(selectedCalDate).toLocaleDateString();
+  const dayTasks = state.assignments.filter(a => a.dueDate === selectedCalDate);
+  const dayHtml = dayTasks.length === 0
+    ? `<div class="empty"><div class="empty-title">No tasks on this day</div></div>`
+    : dayTasks.map(a => renderTaskItem(a, true)).join('');
+  document.getElementById('calDayTasks').innerHTML = dayHtml;
+  hookTaskListeners(document.getElementById('calDayTasks'));
+}
+
+/* ------------------ Pomodoro ------------------ */
+let pomoState = {
+  running: false,
+  mode: 'focus', // 'focus' | 'break' | 'long'
+  remaining: 25 * 60,
+  total: 25 * 60,
+  sessionCount: 0,
+  interval: null,
+};
+
+function renderPomodoro() {
+  document.getElementById('pomoFocusMin').value = state.pomodoro.focusMin;
+  document.getElementById('pomoBreakMin').value = state.pomodoro.breakMin;
+  document.getElementById('pomoLongEvery').value = state.pomodoro.longEvery;
+  document.getElementById('pomoLongMin').value = state.pomodoro.longMin;
+
+  if (!pomoState.running && pomoState.total === 25*60) {
+    pomoState.total = state.pomodoro.focusMin * 60;
+    pomoState.remaining = pomoState.total;
+  }
+  updatePomoDisplay();
+
+  // task dropdown
+  const sel = document.getElementById('pomoTaskLink');
+  sel.innerHTML = '<option value="">— None —</option>' +
+    state.assignments.filter(a=>!a.completed).map(a =>
+      `<option value="${a.id}">${escapeHtml(a.title)}</option>`).join('');
+
+  // today stats
+  const today = toYMD(new Date());
+  const todays = (state.pomodoro.history||[]).filter(h => h.date === today);
+  const focusToday = todays.filter(h=>h.type==='focus').length;
+  const totalMin = todays.reduce((s,h) => s + (h.type==='focus'?h.minutes:0), 0);
+  document.getElementById('pomoSessionCount').textContent = focusToday;
+  document.getElementById('pomoTotalToday').textContent = totalMin + ' min';
+
+  // history
+  const recent = (state.pomodoro.history||[]).slice(-8).reverse();
+  document.getElementById('pomoHistory').innerHTML = recent.length === 0
+    ? '<div class="help-text">No sessions yet.</div>'
+    : recent.map(h => {
+        const taskName = h.taskId ? (state.assignments.find(a=>a.id===h.taskId)?.title || 'Deleted task') : 'Unlinked';
+        return `<div style="padding:4px 0; border-bottom: 1px dashed var(--border); font-size:12px;">
+          <b>${h.type==='focus'?'Focus':'Break'}</b> · ${h.minutes} min · ${escapeHtml(taskName)} · ${h.date}
+        </div>`;
+      }).join('');
+}
+
+function updatePomoDisplay() {
+  const m = Math.floor(pomoState.remaining / 60);
+  const s = pomoState.remaining % 60;
+  document.getElementById('pomoTimer').textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const mode = pomoState.mode === 'focus' ? 'Focus' : pomoState.mode==='long'?'Long Break':'Break';
+  document.getElementById('pomoMode').textContent = mode;
+  const pct = pomoState.total > 0 ? (1 - pomoState.remaining/pomoState.total)*100 : 0;
+  document.getElementById('pomoFill').style.width = pct + '%';
+  document.title = pomoState.running ? `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} · StudyDeck` : 'StudyDeck — Schoology Study Planner';
+}
+
+function pomoStart() {
+  if (pomoState.running) return;
+  pomoState.running = true;
+  pomoState.interval = setInterval(() => {
+    pomoState.remaining--;
+    if (pomoState.remaining <= 0) {
+      pomoComplete();
+    }
+    updatePomoDisplay();
+  }, 1000);
+}
+function pomoPause() {
+  pomoState.running = false;
+  clearInterval(pomoState.interval);
+  updatePomoDisplay();
+}
+function pomoReset() {
+  pomoPause();
+  pomoState.remaining = pomoState.total;
+  updatePomoDisplay();
+}
+function pomoSkip() {
+  pomoComplete(true);
+}
+function pomoComplete(skipped=false) {
+  pomoPause();
+  const type = pomoState.mode === 'focus' ? 'focus' : 'break';
+  if (!skipped) {
+    const min = Math.round(pomoState.total / 60);
+    state.pomodoro.history = state.pomodoro.history || [];
+    state.pomodoro.history.push({
+      date: toYMD(new Date()),
+      taskId: document.getElementById('pomoTaskLink')?.value || null,
+      minutes: min,
+      type
+    });
+    if (type==='focus') bumpActivity('focus', min);
+    save();
+    notify(type==='focus' ? 'Focus session complete! Take a break 🎉' : 'Break over! Time to focus again.');
+  }
+  // switch mode
+  if (pomoState.mode === 'focus') {
+    pomoState.sessionCount++;
+    const isLong = pomoState.sessionCount % state.pomodoro.longEvery === 0;
+    pomoState.mode = isLong ? 'long' : 'break';
+    pomoState.total = (isLong ? state.pomodoro.longMin : state.pomodoro.breakMin) * 60;
+  } else {
+    pomoState.mode = 'focus';
+    pomoState.total = state.pomodoro.focusMin * 60;
+  }
+  pomoState.remaining = pomoState.total;
+  updatePomoDisplay();
+  if (activeView === 'pomodoro') renderPomodoro();
+}
+
+/* ------------------ Stats ------------------ */
+let statsRange = 'week';
+let statsClassId = 'all';
+
+function getRangeBounds(range) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (range === 'week') {
+    const start = new Date(today); start.setDate(today.getDate() - 6);
+    return { start, end: today, label: 'Last 7 days' };
+  }
+  if (range === 'month') {
+    const start = new Date(today); start.setDate(today.getDate() - 29);
+    return { start, end: today, label: 'Last 30 days' };
+  }
+  return { start: null, end: null, label: 'All time' };
+}
+function inRange(ymd, start, end) {
+  if (!start) return true;
+  if (!ymd) return false;
+  const d = fromYMD(ymd);
+  return d >= start && d <= new Date(end.getTime() + 86399999);
+}
+function assignmentInRange(a, start, end) {
+  if (!start) return true;
+  // Use completion date if completed, else due date
+  if (a.completed && a.completedAt) {
+    const d = new Date(a.completedAt);
+    return d >= start && d <= new Date(end.getTime() + 86399999);
+  }
+  return inRange(a.dueDate, start, end);
+}
+
+function renderStats() {
+  // populate class filter
+  const sel = document.getElementById('statsClassFilter');
+  const prev = sel.value || statsClassId;
+  sel.innerHTML = '<option value="all">All classes</option>' +
+    state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  sel.value = prev;
+  statsClassId = sel.value;
+
+  const { start, end, label } = getRangeBounds(statsRange);
+  let scoped = state.assignments.filter(a => assignmentInRange(a, start, end));
+  if (statsClassId !== 'all') scoped = scoped.filter(a => a.classId === statsClassId);
+
+  const total = scoped.length;
+  const done = scoped.filter(a=>a.completed).length;
+  const rate = total? Math.round(done/total*100):0;
+
+  const history = (state.pomodoro.history||[]).filter(h => {
+    if (!start) return true;
+    return inRange(h.date, start, end);
+  });
+  const totalFocus = history.filter(h=>h.type==='focus').reduce((s,h)=>s+h.minutes,0);
+  const sessionCount = history.filter(h=>h.type==='focus').length;
+
+  document.getElementById('statsCards').innerHTML = [
+    { label: 'Completion rate', value: rate+'%', sub: `${done} of ${total} · ${label}` },
+    { label: 'Focus sessions', value: sessionCount, sub: label },
+    { label: 'Focus minutes', value: totalFocus, sub: label },
+    { label: 'Active classes', value: state.classes.length, sub: 'Total' },
+  ].map(c => `
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value">${c.value}</div>
+      <div class="stat-sub">${c.sub}</div>
+    </div>`).join('');
+
+  // by class (uses scoped data)
+  const byClass = state.classes.map(c => {
+    const all = scoped.filter(a=>a.classId===c.id);
+    const d = all.filter(a=>a.completed).length;
+    const pct = all.length ? Math.round(d/all.length*100) : 0;
+    return { c, total: all.length, done: d, pct };
+  });
+  document.getElementById('byClassBreakdown').innerHTML = byClass.map(x => `
+    <div style="margin-bottom: 10px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+        <span><span class="class-dot" style="background:${x.c.color}; display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px;"></span>${escapeHtml(x.c.name)}</span>
+        <span>${x.done}/${x.total} · ${x.pct}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${x.pct}%; background:${x.c.color}"></div></div>
+    </div>
+  `).join('') || '<div class="help-text">No classes yet.</div>';
+
+  // 14 day activity
+  const chart = document.getElementById('activityChart');
+  const maxVal = Math.max(1, ...Array(14).fill(0).map((_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (13-i));
+    return state.activity[toYMD(d)]?.completed || 0;
+  }));
+  chart.innerHTML = Array(14).fill(0).map((_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (13-i));
+    const key = toYMD(d);
+    const val = state.activity[key]?.completed || 0;
+    const h = val/maxVal*100;
+    return `<div style="flex:1; background:${val>0?'var(--accent)':'var(--bg-soft)'}; border-radius:4px; height:${Math.max(h, 4)}%;" title="${key}: ${val} tasks"></div>`;
+  }).join('');
+}
+
+function bumpActivity(type, minutes=0) {
+  const key = toYMD(new Date());
+  state.activity[key] = state.activity[key] || { completed: 0, focusMin: 0 };
+  if (type === 'completed') state.activity[key].completed++;
+  if (type === 'focus') state.activity[key].focusMin += minutes;
+  save();
+}
+
+/* ------------------ Settings ------------------ */
+function renderSettings() {
+  document.getElementById('settingsName').value = state.profile.name || '';
+  document.getElementById('savedIcalUrl').value = state.savedIcalUrl || '';
+  const gk = document.getElementById('googleApiKey');
+  const gi = document.getElementById('googleCalId');
+  const as = document.getElementById('appsScriptUrl');
+  if (gk) gk.value = state.googleApiKey || '';
+  if (gi) gi.value = state.googleCalId || '';
+  if (as) as.value = state.appsScriptUrl || '';
+  renderClassManager();
+  renderBulkClassList();
+  // notif status
+  if ('Notification' in window) {
+    document.getElementById('notifStatus').textContent = 'Current status: ' + Notification.permission;
+  } else {
+    document.getElementById('notifStatus').textContent = 'Not supported in this browser.';
+  }
+}
+
+function renderBulkClassList() {
+  const host = document.getElementById('bulkClassList');
+  if (!host) return;
+  host.innerHTML = state.classes.map(c => {
+    const count = state.assignments.filter(a => a.classId === c.id).length;
+    return `
+      <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; cursor:pointer;">
+        <input type="checkbox" data-bulk-class="${c.id}">
+        <span class="class-dot" style="background:${c.color}; width:10px; height:10px; border-radius:50%;"></span>
+        <span style="flex:1; font-size:13px;">${escapeHtml(c.name)}</span>
+        <span style="color:var(--text-faint); font-size:11px;">${count} assignments</span>
+      </label>
+    `;
+  }).join('');
+}
+
+function askConfirm({ title, body, okText = 'Delete', onOk }) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').innerHTML = body;
+  document.getElementById('confirmOk').textContent = okText;
+  const modal = document.getElementById('modalConfirm');
+  modal.classList.add('open');
+  const ok = document.getElementById('confirmOk');
+  const cancel = document.getElementById('confirmCancel');
+  const close = () => {
+    modal.classList.remove('open');
+    ok.onclick = null;
+    cancel.onclick = null;
+  };
+  ok.onclick = () => { close(); try { onOk(); } catch(e) { console.error(e); toast('Error: ' + e.message); } };
+  cancel.onclick = close;
+}
+
+function deletePastEvents() {
+  const keepEl = document.getElementById('pastKeepIncomplete');
+  const keepIncomplete = keepEl ? keepEl.checked : false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const targets = state.assignments.filter(a => {
+    if (!a.dueDate) return false;
+    const due = fromYMD(a.dueDate);
+    if (due >= today) return false;
+    if (keepIncomplete && !a.completed) return false;
+    return true;
+  });
+  if (targets.length === 0) {
+    toast('No past events match your filters');
+    return;
+  }
+  const preview = targets.slice(0, 5).map(a => `• ${escapeHtml(a.title)} <span style="color:var(--text-faint)">(${fmtDateHuman(a.dueDate)})</span>`).join('<br>');
+  const more = targets.length > 5 ? `<br><i>...and ${targets.length - 5} more</i>` : '';
+  askConfirm({
+    title: `Delete ${targets.length} past event${targets.length===1?'':'s'}?`,
+    body: `${keepIncomplete ? 'Only completed past assignments.' : 'All past assignments (completed or not).'}<br><br>${preview}${more}<br><br><b>This can't be undone.</b>`,
+    okText: `Delete ${targets.length}`,
+    onOk: () => {
+      const ids = new Set(targets.map(a => a.id));
+      state.assignments = state.assignments.filter(a => !ids.has(a.id));
+      save();
+      renderView(activeView);
+      toast(`Deleted ${targets.length} past event${targets.length===1?'':'s'}`);
+    }
+  });
+}
+
+function deleteByClass() {
+  const selected = Array.from(document.querySelectorAll('#bulkClassList [data-bulk-class]'))
+    .filter(cb => cb.checked)
+    .map(cb => cb.dataset.bulkClass);
+  if (selected.length === 0) { toast('Select at least one class'); return; }
+  const onlyCompleted = document.getElementById('bulkOnlyCompleted').checked;
+  const onlySchoology = document.getElementById('bulkOnlySchoology').checked;
+
+  const targets = state.assignments.filter(a => {
+    if (!selected.includes(a.classId)) return false;
+    if (onlyCompleted && !a.completed) return false;
+    if (onlySchoology && a.source !== 'schoology') return false;
+    return true;
+  });
+  if (targets.length === 0) {
+    toast('No assignments match those filters');
+    return;
+  }
+  const classNames = selected.map(id => classById(id).name).join(', ');
+  const preview = targets.slice(0, 5).map(a => `• ${escapeHtml(a.title)} <span style="color:var(--text-faint)">(${escapeHtml(classById(a.classId).name)})</span>`).join('<br>');
+  const more = targets.length > 5 ? `<br><i>...and ${targets.length - 5} more</i>` : '';
+  let filterSummary = '';
+  if (onlyCompleted) filterSummary += '• Only completed<br>';
+  if (onlySchoology) filterSummary += '• Only Schoology-imported<br>';
+
+  askConfirm({
+    title: `Delete ${targets.length} assignment${targets.length===1?'':'s'}?`,
+    body: `From <b>${escapeHtml(classNames)}</b><br>${filterSummary}<br>${preview}${more}<br><br><b>This can't be undone.</b>`,
+    okText: `Delete ${targets.length}`,
+    onOk: () => {
+      const ids = new Set(targets.map(a => a.id));
+      state.assignments = state.assignments.filter(a => !ids.has(a.id));
+      save();
+      renderView(activeView);
+      toast(`Deleted ${targets.length} assignment${targets.length===1?'':'s'}`);
+    }
+  });
+}
+
+function renderClassManager() {
+  document.getElementById('classManager').innerHTML = state.classes.map(c => `
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+      <span class="class-dot" style="background:${c.color}; width:14px; height:14px; border-radius:50%;"></span>
+      <input type="text" class="form-input" value="${escapeHtml(c.name)}" data-class-edit="${c.id}" style="flex:1;">
+      <input type="color" value="${c.color}" data-class-color="${c.id}" style="width:40px; height:36px; border:1px solid var(--border); border-radius:6px;">
+      <button class="btn btn-ghost btn-sm" data-class-del="${c.id}">🗑</button>
+    </div>
+  `).join('');
+  document.querySelectorAll('[data-class-edit]').forEach(el => {
+    el.onblur = () => { classById(el.dataset.classEdit).name = el.value.trim() || 'Unnamed'; save(); renderClassesSidebar(); };
+  });
+  document.querySelectorAll('[data-class-color]').forEach(el => {
+    el.onchange = () => { classById(el.dataset.classColor).color = el.value; save(); renderClassesSidebar(); renderView(activeView); };
+  });
+  document.querySelectorAll('[data-class-del]').forEach(el => {
+    el.onclick = () => {
+      if (state.classes.length === 1) { toast('Keep at least one class'); return; }
+      if (!confirm('Delete this class? Assignments in it will move to General.')) return;
+      const id = el.dataset.classDel;
+      const general = state.classes.find(c=>c.id!=='id')?.id || state.classes[0].id;
+      state.assignments.forEach(a => { if (a.classId===id) a.classId = state.classes.find(c=>c.id!==id).id; });
+      state.classes = state.classes.filter(c => c.id !== id);
+      save(); renderView(activeView);
+    };
+  });
+}
+
+function renderClassesSidebar() {
+  document.getElementById('classList').innerHTML = state.classes.map(c => {
+    const count = state.assignments.filter(a => a.classId===c.id && !a.completed).length;
+    return `
+      <div class="class-pill nav-item-label" data-class-filter="${c.id}">
+        <span class="class-dot" style="background:${c.color}"></span>
+        <span style="flex:1;">${escapeHtml(c.name)}</span>
+        <span style="color:var(--text-faint); font-size:11px;">${count}</span>
+      </div>
+    `;
+  }).join('');
+  document.querySelectorAll('[data-class-filter]').forEach(el => {
+    el.onclick = () => {
+      setView('tasks');
+      filterMode = 'class:' + el.dataset.classFilter;
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      renderTasks();
+    };
+  });
+}
+
+/* ------------------ iCal Import ------------------ */
+function openImportModal() {
+  document.getElementById('icalUrlInput').value = state.savedIcalUrl || '';
+  document.getElementById('icalTextInput').value = '';
+  document.getElementById('importResult').textContent = '';
+  document.getElementById('modalImport').classList.add('open');
+}
+
+async function fetchIcalUrl() {
+  const url = document.getElementById('icalUrlInput').value.trim();
+  if (!url) { toast('Paste a URL first'); return; }
+  const result = document.getElementById('importResult');
+  result.innerHTML = '⏳ Fetching...';
+
+  // Validate URL first
+  let parsed;
+  try { parsed = new URL(url); }
+  catch (e) {
+    result.innerHTML = `❌ <b>That doesn't look like a valid URL.</b><br>
+      Make sure it starts with <code>https://</code> and looks like <code>https://yourschool.schoology.com/iCal?...</code><br>
+      <br><b>What to do:</b> Go back to Schoology → Calendar and copy the iCal Feed link again.`;
+    return;
+  }
+  if (!/schoology/i.test(parsed.hostname) && !/\.ics/i.test(url)) {
+    result.innerHTML = `⚠️ <b>This doesn't look like a Schoology iCal URL.</b><br>
+      The URL should contain <code>schoology.com</code> or end with <code>.ics</code>. Try fetching anyway?<br>
+      <button class="btn btn-outline btn-sm" id="forceFetchBtn" style="margin-top:6px;">Yes, try it</button>`;
+    document.getElementById('forceFetchBtn').onclick = () => actuallyFetch(url);
+    return;
+  }
+  actuallyFetch(url);
+}
+
+async function actuallyFetch(url) {
+  const result = document.getElementById('importResult');
+  const attempts = [
+    { name: 'Direct fetch (fastest)', url: url, kind: 'direct' },
+    { name: 'via corsproxy.io', url: 'https://corsproxy.io/?' + encodeURIComponent(url), kind: 'proxy' },
+    { name: 'via allorigins.win', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url), kind: 'proxy' },
+  ];
+  const log = [];
+  let text = null;
+
+  for (const a of attempts) {
+    log.push(`⏳ Trying ${a.name}...`);
+    result.innerHTML = log.join('<br>');
+    try {
+      const res = await fetch(a.url, { cache: 'no-store' });
+      if (!res.ok) {
+        log[log.length - 1] = `❌ ${a.name} — returned HTTP ${res.status} ${res.statusText || ''}`;
+        continue;
+      }
+      const body = await res.text();
+      if (!body.includes('BEGIN:VCALENDAR')) {
+        log[log.length - 1] = `❌ ${a.name} — response didn't contain iCal data (got ${body.length} chars of something else).`;
+        continue;
+      }
+      text = body;
+      log[log.length - 1] = `✅ ${a.name} — got ${body.length} chars`;
+      break;
+    } catch (e) {
+      const msg = (e.message || '').toLowerCase();
+      let why = e.message;
+      if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
+        why = a.kind === 'direct'
+          ? "Blocked by CORS — your school's server isn't allowing browser apps to read it directly. (This is the #1 reason Option 1 fails.)"
+          : "Network error — the proxy is down or unreachable.";
+      } else if (msg.includes('cors')) {
+        why = "CORS policy blocked the request. Schoology doesn't send the header browsers require.";
+      } else if (msg.includes('certificate') || msg.includes('ssl')) {
+        why = "SSL/certificate problem.";
+      }
+      log[log.length - 1] = `❌ ${a.name} — ${escapeHtml(why)}`;
+    }
+  }
+
+  if (text) {
+    document.getElementById('icalTextInput').value = text;
+    result.innerHTML = log.join('<br>') + `<br><br>✅ <b>Ready to import.</b> Click <b>Parse &amp; import</b> below.`;
+    return;
+  }
+
+  // Everything failed — log and explain
+  logFail('iCal direct fetch', 'All 3 fetch methods failed', log.map(l => l.replace(/<[^>]+>/g, '')).join('\n') + `\n\nURL: ${url}\nTime: ${new Date().toISOString()}`);
+
+  result.innerHTML = log.join('<br>') + `
+    <div style="margin-top:14px; padding:12px; background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:6px;">
+      <b>All fetch attempts failed.</b> <a href="#" id="openFailLogFromIcal" class="link-btn">See Fail log →</a><br>Here's what's probably happening:
+      <ul style="margin:6px 0 6px 18px; padding:0;">
+        <li><b>CORS block (most common)</b> — browsers refuse to read data from another domain unless that domain explicitly allows it. Most Schoology setups don't.</li>
+        <li><b>Wrong URL</b> — double-check you copied the full URL including the <code>?token=...</code> part.</li>
+        <li><b>URL expired / revoked</b> — generate a fresh one in Schoology.</li>
+        <li><b>Private network</b> — if you're on a school VPN, the proxies can't reach it.</li>
+      </ul>
+      <b>✅ Fix: Use Option 2 below.</b> Paste your URL into a new browser tab to view the .ics contents, copy the text, and paste it into the big box below. It works every time.
+    </div>`;
+  document.getElementById('openFailLogFromIcal')?.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    document.getElementById('modalImport')?.classList.remove('open');
+    setView('faillog');
+  });
+}
+
+function parseIcal(text) {
+  // Unfold lines: RFC5545 continuation lines start with space/tab
+  const raw = text.replace(/\r\n/g, '\n').replace(/\n[ \t]/g, '');
+  const lines = raw.split('\n');
+  const events = [];
+  let cur = null;
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+    if (line === 'END:VEVENT') {
+      if (cur) events.push(cur);
+      cur = null;
+      continue;
+    }
+    if (!cur) continue;
+    const colon = line.indexOf(':');
+    if (colon < 0) continue;
+    const keyPart = line.slice(0, colon);
+    const value = line.slice(colon + 1);
+    const key = keyPart.split(';')[0];
+    const params = keyPart.split(';').slice(1).join(';');
+    if (key === 'SUMMARY') cur.summary = unescapeIcal(value);
+    if (key === 'DESCRIPTION') cur.description = unescapeIcal(value);
+    if (key === 'LOCATION') cur.location = unescapeIcal(value);
+    if (key === 'UID') cur.uid = value;
+    if (key === 'CATEGORIES') cur.categories = value;
+    if (key === 'URL') cur.url = value;
+    if (key === 'ORGANIZER') {
+      const cn = /CN=([^;:]+)/i.exec(keyPart + ':' + value);
+      if (cn) cur.organizer = cn[1];
+    }
+    if (key === 'DTSTART' || key === 'DTEND') {
+      cur[key.toLowerCase()] = parseIcalDate(value);
+    }
+  }
+  return events;
+}
+
+// Extract likely class name from a Schoology/Google Calendar event, trying many patterns.
+// Returns { className, cleanTitle } — cleanTitle strips the class prefix from the summary.
+function detectClass(ev) {
+  const tryPatterns = [];
+  const s = (ev.summary || '').trim();
+  const desc = (ev.description || '').trim();
+  const loc = (ev.location || '').trim();
+
+  // 1. "[ClassName] title"
+  let m = s.match(/^\[([^\]]+)\]\s*(.*)$/);
+  if (m) return { className: m[1].trim(), cleanTitle: m[2].trim() || s };
+
+  // 2. Schoology RSS-style: Title is plain, description has "Course: X"
+  const courseMatch = desc.match(/(?:course|class|section)\s*[:\-]\s*([^\n\r]+)/i);
+  if (courseMatch) return { className: courseMatch[1].trim(), cleanTitle: s };
+
+  // 3. "ClassName: Actual title" — most common Schoology pattern
+  m = s.match(/^([^:]+):\s*(.+)$/);
+  if (m) {
+    const prefix = m[1].trim();
+    // Only take as class name if the prefix looks reasonable (<= 60 chars, not a date/time)
+    if (prefix.length <= 60 && !/^\d{1,2}[:\/\-]\d{1,2}/.test(prefix)) {
+      return { className: prefix, cleanTitle: m[2].trim() };
+    }
+  }
+
+  // 4. "ClassName - Actual title"
+  m = s.match(/^(.{2,50}?)\s+[\-–—]\s+(.+)$/);
+  if (m) {
+    const prefix = m[1].trim();
+    if (!/^\d/.test(prefix)) return { className: prefix, cleanTitle: m[2].trim() };
+  }
+
+  // 5. Location often has course code
+  if (loc && loc.length <= 60 && !/https?:\/\//.test(loc)) {
+    return { className: loc, cleanTitle: s };
+  }
+
+  // 6. CATEGORIES
+  if (ev.categories) {
+    return { className: ev.categories.split(',')[0].trim(), cleanTitle: s };
+  }
+
+  // 7. ORGANIZER CN
+  if (ev.organizer) {
+    return { className: ev.organizer.trim(), cleanTitle: s };
+  }
+
+  return { className: null, cleanTitle: s };
+}
+function unescapeIcal(s) {
+  return s.replace(/\\n/g,'\n').replace(/\\,/g,',').replace(/\\;/g,';').replace(/\\\\/g,'\\');
+}
+function parseIcalDate(s) {
+  // 20240515T230000Z or 20240515 or 20240515T080000
+  const m = s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/);
+  if (!m) return null;
+  const [, y, mo, d, hh, mm, ss, z] = m;
+  if (!hh) return { date: `${y}-${mo}-${d}`, time: null, utc: false };
+  if (z) {
+    const dt = new Date(Date.UTC(+y, +mo-1, +d, +hh, +mm, +ss||0));
+    const local = dt;
+    const pad = n => String(n).padStart(2,'0');
+    return {
+      date: `${local.getFullYear()}-${pad(local.getMonth()+1)}-${pad(local.getDate())}`,
+      time: `${pad(local.getHours())}:${pad(local.getMinutes())}`,
+      utc: true
+    };
+  }
+  return { date: `${y}-${mo}-${d}`, time: `${hh}:${mm}`, utc: false };
+}
+
+// Analyze events and return class detection preview: {events, detectedClasses}
+function analyzeEvents(events) {
+  const classCounts = new Map(); // className -> count
+  const enriched = events.map(ev => {
+    if (!ev.summary) return null;
+    const { className, cleanTitle } = detectClass(ev);
+    const key = className || '(No class detected)';
+    classCounts.set(key, (classCounts.get(key) || 0) + 1);
+    return { ...ev, detectedClass: className, cleanTitle };
+  }).filter(Boolean);
+  const detectedClasses = Array.from(classCounts.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+  return { events: enriched, detectedClasses };
+}
+
+function importIcalEvents(enriched, classMapping) {
+  // classMapping: { detectedName -> { classId (existing) | {newName, color} } }
+  let added = 0, skipped = 0, updated = 0;
+  enriched.forEach(ev => {
+    const detected = ev.detectedClass || '(No class detected)';
+    const map = classMapping[detected];
+    let classId;
+    if (!map || map.action === 'skip') { skipped++; return; }
+    if (map.action === 'existing') {
+      classId = map.classId;
+    } else if (map.action === 'new') {
+      // find-or-create by name
+      let cls = state.classes.find(c => c.name.toLowerCase() === map.name.toLowerCase());
+      if (!cls) {
+        cls = { id: uid(), name: map.name, color: map.color || randomColor() };
+        state.classes.push(cls);
+      }
+      classId = cls.id;
+    }
+
+    const extId = 'ical:' + (ev.uid || (ev.summary + (ev.dtstart?.date || '')));
+    const existing = state.assignments.find(a => a.extId === extId);
+    if (existing) {
+      // Update due date/title in case Schoology changed it
+      existing.title = ev.cleanTitle || ev.summary;
+      existing.dueDate = ev.dtstart?.date || existing.dueDate;
+      existing.dueTime = ev.dtstart?.time || existing.dueTime;
+      if (ev.description && !existing.notes) existing.notes = ev.description;
+      updated++;
+      return;
+    }
+    state.assignments.push({
+      id: uid(),
+      title: ev.cleanTitle || ev.summary,
+      classId,
+      priority: 'med',
+      dueDate: ev.dtstart?.date || null,
+      dueTime: ev.dtstart?.time || null,
+      notes: ev.description || '',
+      completed: false,
+      subtasks: [],
+      createdAt: Date.now(),
+      source: 'schoology',
+      extId
+    });
+    added++;
+  });
+  save();
+  return { added, skipped, updated };
+}
+function randomColor() {
+  const palette = ['#5b6cff','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16'];
+  return palette[Math.floor(Math.random()*palette.length)];
+}
+
+async function parseAndImport() {
+  const text = document.getElementById('icalTextInput').value.trim();
+  if (!text) { toast('Paste or fetch an .ics first'); return; }
+  const events = parseIcal(text);
+  if (events.length === 0) { toast('No events found — did you paste the right file?'); return; }
+  openPreviewModal(events);
+}
+
+/* ------------------ Apps Script Bridge ------------------ */
+async function fetchAppsScript() {
+  const url = (state.appsScriptUrl || '').trim();
+  if (!url) {
+    toast('Set your Apps Script Web App URL in Settings first');
+    setView('settings');
+    return;
+  }
+  // Preflight: file:// protocol blocks ALL external fetches
+  if (isFileProtocol()) {
+    const detail = `Location protocol: ${location.protocol}
+Full URL: ${location.href}
+
+Your browser is blocking all external fetch requests because StudyDeck is loaded from a local file. This is a browser security feature — the fetch never even leaves your machine, so the Apps Script, the Schoology calendar, and the Google Calendar API all cannot be reached.
+
+THE FIX: Run StudyDeck from a local server instead.
+
+Easiest method (if you have Python installed):
+  1. Open a terminal in the Study Planner folder
+  2. Run: python -m http.server 8000
+  3. Visit: http://localhost:8000/study-planner.html
+
+Or use VS Code's "Live Server" extension, or Node's "npx serve", or upload the file to GitHub Pages. See the "🖥️ Run locally" tab in the sidebar for copy-paste instructions.`;
+    logFail('Apps Script', 'Blocked: Running from file:// protocol', detail);
+    toast('Running from file:// — sync blocked. See "Run locally" tab', 5000);
+    setView('server');
+    return;
+  }
+  if (!/^https:\/\/script\.google\.com\//.test(url)) {
+    const msg = `URL should start with https://script.google.com/\n\nYour URL: ${url}`;
+    toast('Invalid URL — see Fail log');
+    logFail('Apps Script', 'Invalid URL format', msg);
+    return;
+  }
+
+  const result = document.getElementById('importResult');
+  const showStatus = (html) => { if (result) result.innerHTML = html; };
+  showStatus('⏳ Calling your Apps Script bridge...');
+
+  const logLines = [];
+  logLines.push(`URL: ${url}`);
+  logLines.push(`Time: ${new Date().toISOString()}`);
+
+  try {
+    logLines.push(`\n→ Sending GET request...`);
+    const startTime = Date.now();
+    const res = await fetch(url, { redirect: 'follow' });
+    const duration = Date.now() - startTime;
+    logLines.push(`← Response in ${duration}ms`);
+    logLines.push(`  Status: ${res.status} ${res.statusText}`);
+    logLines.push(`  Final URL: ${res.url}`);
+    logLines.push(`  Content-Type: ${res.headers.get('content-type') || '(none)'}`);
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '(could not read body)');
+      logLines.push(`\nResponse body (first 500 chars):\n${body.slice(0, 500)}`);
+      throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    }
+
+    const text = await res.text();
+    logLines.push(`  Body length: ${text.length} chars`);
+    logLines.push(`  Body preview: ${text.slice(0, 200).replace(/\n/g, ' ')}${text.length > 200 ? '...' : ''}`);
+
+    let items;
+    try { items = JSON.parse(text); }
+    catch (e) {
+      if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+        logLines.push(`\n⚠️ Response is HTML, not JSON. This is the classic "Who has access" misconfiguration.`);
+        throw new Error('Got an HTML page back instead of JSON. In your Apps Script deployment, make sure "Who has access" is set to "Anyone".');
+      }
+      logLines.push(`\n⚠️ JSON parse error: ${e.message}`);
+      throw new Error('Response wasn\'t valid JSON: ' + text.slice(0, 120));
+    }
+
+    if (!Array.isArray(items)) {
+      logLines.push(`\n⚠️ Expected array, got ${typeof items}`);
+      throw new Error('Expected a JSON array. Got: ' + JSON.stringify(items).slice(0, 120));
+    }
+
+    logLines.push(`\n✅ Parsed ${items.length} items`);
+    if (items.length === 0) {
+      logInfo('Apps Script', 'Fetch OK but returned 0 events', logLines.join('\n') + '\n\nCheck the calendar ID in your script, or the time window (default is next 90 days).');
+      toast('Script returned no events — see Fail log for details');
+      return;
+    }
+
+    const events = items.map((it, idx) => {
+      const start = it.start ? new Date(it.start) : null;
+      const end   = it.end   ? new Date(it.end)   : null;
+      return {
+        summary: it.title || '',
+        description: it.description || '',
+        location: it.location || '',
+        organizer: it.organizer || '',
+        categories: it.categories || '',
+        uid: 'apps:' + (it.id || (it.title || '') + (it.start || '') + idx),
+        dtstart: start ? dateToLocal(start, it.start) : null,
+        dtend:   end   ? dateToLocal(end,   it.end)   : null,
+      };
+    }).filter(e => e.summary);
+
+    logInfo('Apps Script', `Fetched ${events.length} events successfully`, logLines.join('\n'));
+    toast(`Fetched ${events.length} events from Apps Script`);
+    document.getElementById('modalImport')?.classList.remove('open');
+    openPreviewModal(events);
+  } catch (e) {
+    const msg = (e.message || '').toLowerCase();
+    let why = e.message || String(e);
+    let hints = [];
+    if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
+      why = 'Network error — fetch was blocked or the server is unreachable.';
+      hints.push('Check you have internet connectivity');
+      hints.push('Check the URL is exact (Deploy → Manage deployments → copy URL)');
+      hints.push('Try opening the URL in a new browser tab — do you see JSON?');
+    }
+    if (msg.includes('http 401') || msg.includes('http 403')) {
+      hints.push('Deployment "Who has access" is NOT set to Anyone');
+      hints.push('Open your script → Deploy → Manage deployments → Edit → set "Who has access" to Anyone → Deploy');
+    }
+    if (msg.includes('http 404')) {
+      hints.push('The deployment URL is wrong or the deployment was deleted');
+      hints.push('Re-deploy and copy the new /exec URL');
+    }
+    if (msg.includes('html page')) {
+      hints.push('In your Apps Script: Deploy → Manage deployments → Edit → "Who has access" → Anyone');
+      hints.push('After editing, you must click Deploy again to create a new version');
+    }
+
+    logLines.push(`\n❌ ERROR: ${why}`);
+    if (hints.length) logLines.push(`\nLikely causes:\n${hints.map(h => '• ' + h).join('\n')}`);
+
+    logFail('Apps Script', why, logLines.join('\n'));
+
+    showStatus(`❌ Apps Script fetch failed: ${escapeHtml(why)}<br><br>
+      <b>Open the <a href="#" id="failLogLink" class="link-btn">Fail log tab</a> for the full diagnostic.</b><br><br>
+      <b>Common causes:</b><br>
+      • URL isn't the <i>Web App URL</i> from Deploy — it must end in <code>/exec</code><br>
+      • Deployment "Who has access" isn't set to <b>Anyone</b><br>
+      • Calendar ID inside the script doesn't match your subscribed Schoology calendar<br>
+      • You haven't redeployed since editing the script`);
+    document.getElementById('failLogLink')?.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      document.getElementById('modalImport')?.classList.remove('open');
+      setView('faillog');
+    });
+    toast('Apps Script failed — check Fail log tab', 4500);
+  }
+}
+
+function dateToLocal(d, rawStr) {
+  const pad = n => String(n).padStart(2,'0');
+  // All-day events come through as midnight UTC in many cases — detect by raw string having no time component
+  const looksAllDay = typeof rawStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawStr.split('T')[0]) && !rawStr.includes('T');
+  if (looksAllDay) {
+    return { date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`, time: null, utc: false };
+  }
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+    utc: false
+  };
+}
+
+/* ------------------ Google Calendar API ------------------ */
+async function fetchGoogleCalendar() {
+  const apiKey = (state.googleApiKey || '').trim();
+  const calId  = (state.googleCalId || '').trim();
+  if (!apiKey || !calId) {
+    toast('Set Google API key and Calendar ID in Settings first');
+    setView('settings');
+    return;
+  }
+  // Preflight: file:// protocol blocks ALL external fetches
+  if (isFileProtocol()) {
+    const detail = `Location protocol: ${location.protocol}
+Full URL: ${location.href}
+
+Your browser is blocking all external fetch requests because StudyDeck is loaded from a local file. Google Calendar API requests cannot be made from file:// URLs.
+
+THE FIX: Run StudyDeck from a local server instead.
+
+Easiest method (if you have Python installed):
+  1. Open a terminal in the Study Planner folder
+  2. Run: python -m http.server 8000
+  3. Visit: http://localhost:8000/study-planner.html
+
+See the "🖥️ Run locally" tab in the sidebar for copy-paste instructions.`;
+    logFail('Google Calendar', 'Blocked: Running from file:// protocol', detail);
+    toast('Running from file:// — sync blocked. See "Run locally" tab', 5000);
+    setView('server');
+    return;
+  }
+
+  // Pull events from today (00:00 local) forward, 365 days out
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const future = new Date(now); future.setDate(future.getDate() + 365);
+  const params = new URLSearchParams({
+    key: apiKey,
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    timeMin: todayStart.toISOString(),
+    timeMax: future.toISOString(),
+    maxResults: '2500'
+  });
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?${params}`;
+
+  const result = document.getElementById('importResult');
+  if (result) result.innerHTML = '⏳ Contacting Google Calendar...';
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      let errDetail = '';
+      try {
+        const ej = await res.json();
+        errDetail = ej?.error?.message || '';
+      } catch {}
+      if (res.status === 403) throw new Error(`HTTP 403 — Calendar is private or API key lacks Calendar API access. Make the calendar public and check your key restrictions. ${errDetail}`);
+      if (res.status === 404) throw new Error(`HTTP 404 — Calendar ID not found. Double-check the ID copied from Google Calendar settings. ${errDetail}`);
+      if (res.status === 400) throw new Error(`HTTP 400 — Bad request. ${errDetail}`);
+      throw new Error(`HTTP ${res.status}: ${errDetail || res.statusText}`);
+    }
+    const json = await res.json();
+    const items = json.items || [];
+    if (items.length === 0) {
+      toast('Calendar fetched but it has no events in range');
+      return;
+    }
+    // Convert Google Calendar events to our iCal-like format
+    const events = items.map(it => ({
+      summary: it.summary || '',
+      description: it.description || '',
+      location: it.location || '',
+      categories: (it.extendedProperties?.shared?.categories) || '',
+      organizer: it.organizer?.displayName || '',
+      uid: 'gcal:' + it.id,
+      dtstart: googleDateToLocal(it.start),
+      dtend: googleDateToLocal(it.end),
+    })).filter(e => e.summary);
+    toast(`Fetched ${events.length} events from Google Calendar`);
+    // Close settings modal if open, open preview
+    openImportModal(); // ensure import modal visible
+    openPreviewModal(events);
+  } catch (e) {
+    const detail = [
+      `URL: ${url}`,
+      `Time: ${new Date().toISOString()}`,
+      `Error: ${e.message || e}`,
+      ``,
+      `Check your Calendar ID (must end with "@group.calendar.google.com" typically)`,
+      `Check your API key has Calendar API enabled`,
+      `Check the source calendar is set to Public in Google Calendar sharing settings`
+    ].join('\n');
+    logFail('Google Calendar API', e.message || String(e), detail);
+    const msg = '❌ Google Calendar fetch failed: ' + (e.message || e);
+    toast('Google fetch failed — check Fail log tab', 4500);
+    if (result) result.innerHTML = msg + '<br><br>See the <b>Fail log</b> tab for details, or check the Import guide.';
+  }
+}
+
+function googleDateToLocal(g) {
+  if (!g) return null;
+  if (g.date) {
+    // all-day
+    return { date: g.date, time: null, utc: false };
+  }
+  if (g.dateTime) {
+    const d = new Date(g.dateTime);
+    const pad = n => String(n).padStart(2,'0');
+    return {
+      date: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+      utc: false
+    };
+  }
+  return null;
+}
+
+/* ------------------ Preview modal ------------------ */
+let previewPayload = null;
+
+function openPreviewModal(events) {
+  const todayYMD = toYMD(new Date());
+  const rawEvents = events.slice();
+  const pastCount = rawEvents.filter(ev => ev?.dtstart?.date && ev.dtstart.date < todayYMD).length;
+  const upcomingCount = rawEvents.length - pastCount;
+
+  // Re-render the preview whenever the user flips the range toggle
+  const renderPreview = (includePast) => {
+    const filtered = includePast
+      ? rawEvents
+      : rawEvents.filter(ev => !ev?.dtstart?.date || ev.dtstart.date >= todayYMD);
+    const { events: enriched, detectedClasses } = analyzeEvents(filtered);
+    previewPayload = { enriched, detectedClasses };
+    renderPreviewBody({ enriched, detectedClasses, includePast, pastCount, upcomingCount, todayYMD, renderPreview });
+  };
+
+  renderPreview(false); // default: today forward only
+  document.getElementById('modalImport').classList.remove('open');
+  document.getElementById('modalPreview').classList.add('open');
+}
+
+function renderPreviewBody({ enriched, detectedClasses, includePast, pastCount, upcomingCount, todayYMD, renderPreview }) {
+  const host = document.getElementById('previewBody');
+  host.innerHTML = `
+    <div style="background: var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:14px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:8px;">What do you want to import?</div>
+      <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:6px 0;">
+        <input type="radio" name="importRange" value="future" ${!includePast ? 'checked' : ''} style="margin-top:3px;">
+        <div>
+          <div style="font-size:13px;">Only events from today and going forward</div>
+          <div class="help-text" style="margin:2px 0 0 0;">${upcomingCount} event${upcomingCount===1?'':'s'} (recommended)</div>
+        </div>
+      </label>
+      <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:6px 0;">
+        <input type="radio" name="importRange" value="all" ${includePast ? 'checked' : ''} style="margin-top:3px;">
+        <div>
+          <div style="font-size:13px;">Import the whole calendar</div>
+          <div class="help-text" style="margin:2px 0 0 0;">${upcomingCount + pastCount} event${(upcomingCount+pastCount)===1?'':'s'} — includes ${pastCount} past event${pastCount===1?'':'s'} (before ${todayYMD})</div>
+        </div>
+      </label>
+    </div>
+    <p class="help-text" style="margin-bottom:14px;">
+      Found <b>${enriched.length}</b> event${enriched.length===1?'':'s'} across <b>${detectedClasses.length}</b> detected group${detectedClasses.length===1?'':'s'}.
+      Review how they should map to classes — you can rename, recolor, or point them at existing classes.
+    </p>
+    <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+      ${detectedClasses.map((d, i) => {
+        const autoExisting = state.classes.find(c => c.name.toLowerCase() === (d.name||'').toLowerCase());
+        const suggestedColor = autoExisting ? autoExisting.color : pickColor(i);
+        return `
+        <div class="preview-row" data-detected="${escapeHtml(d.name)}" style="display:grid; grid-template-columns: 1fr auto 1fr auto auto; gap:10px; align-items:center; padding:8px; border:1px solid var(--border); border-radius:8px;">
+          <div style="overflow:hidden;">
+            <div style="font-weight:600; font-size:13px;">${escapeHtml(d.name)}</div>
+            <div class="help-text">${d.count} event${d.count===1?'':'s'}</div>
+          </div>
+          <div style="font-size:13px; color:var(--text-faint);">→</div>
+          <select class="form-select preview-map" style="font-size:13px; padding:6px 8px;">
+            <option value="__new__" ${autoExisting ? '' : 'selected'}>Create new class</option>
+            ${state.classes.map(c => `<option value="${c.id}" ${autoExisting && autoExisting.id===c.id ? 'selected':''}>Use "${escapeHtml(c.name)}"</option>`).join('')}
+            <option value="__skip__">Skip these events</option>
+          </select>
+          <input type="text" class="form-input preview-name" value="${escapeHtml(d.name)}" style="font-size:12px; padding:6px 8px; min-width:120px;">
+          <input type="color" class="preview-color" value="${suggestedColor}" style="width:36px; height:32px; border:1px solid var(--border); border-radius:6px;">
+        </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  // Hide name+color inputs when using existing class
+  host.querySelectorAll('.preview-row').forEach(row => {
+    const sel = row.querySelector('.preview-map');
+    const nameI = row.querySelector('.preview-name');
+    const colorI = row.querySelector('.preview-color');
+    const updateVis = () => {
+      const show = sel.value === '__new__';
+      nameI.style.display = show ? '' : 'none';
+      colorI.style.display = show ? '' : 'none';
+    };
+    updateVis();
+    sel.onchange = updateVis;
+  });
+  // Wire up the range toggle (today-forward vs. whole calendar)
+  host.querySelectorAll('input[name="importRange"]').forEach(radio => {
+    radio.onchange = () => {
+      if (radio.checked) renderPreview(radio.value === 'all');
+    };
+  });
+}
+
+function pickColor(i) {
+  const palette = ['#5b6cff','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#f472b6','#22d3ee','#a78bfa','#fb923c'];
+  return palette[i % palette.length];
+}
+
+function confirmImport() {
+  if (!previewPayload) return;
+  const mapping = {};
+  document.querySelectorAll('#previewBody .preview-row').forEach(row => {
+    const detected = row.dataset.detected;
+    const sel = row.querySelector('.preview-map').value;
+    if (sel === '__skip__') { mapping[detected] = { action: 'skip' }; return; }
+    if (sel === '__new__') {
+      mapping[detected] = {
+        action: 'new',
+        name: row.querySelector('.preview-name').value.trim() || detected,
+        color: row.querySelector('.preview-color').value
+      };
+    } else {
+      mapping[detected] = { action: 'existing', classId: sel };
+    }
+  });
+  const { added, skipped, updated } = importIcalEvents(previewPayload.enriched, mapping);
+  document.getElementById('modalPreview').classList.remove('open');
+  renderView(activeView);
+  renderClassesSidebar();
+  toast(`✅ Added ${added} · Updated ${updated} · Skipped ${skipped}`, 4000);
+  previewPayload = null;
+}
+
+/* ------------------ Notifications ------------------ */
+function notify(msg) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try { new Notification('StudyDeck', { body: msg, icon: '' }); } catch(e){}
+  }
+}
+async function enableNotifications() {
+  if (!('Notification' in window)) { toast('Not supported'); return; }
+  const p = await Notification.requestPermission();
+  toast('Permission: ' + p);
+  renderSettings();
+}
+
+function checkReminders() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = Date.now();
+  state.assignments.forEach(a => {
+    if (a.completed || !a.dueDate || a._notified) return;
+    const due = fromYMD(a.dueDate);
+    if (a.dueTime) {
+      const [h,m] = a.dueTime.split(':').map(Number);
+      due.setHours(h,m,0,0);
+    } else {
+      due.setHours(9,0,0,0); // default morning
+    }
+    const ms = due.getTime() - now;
+    // 1 hour before
+    if (ms > 0 && ms < 60*60*1000) {
+      notify(`⏰ Due in ~1hr: ${a.title}`);
+      a._notified = true;
+      save();
+    }
+  });
+}
+
+/* ------------------ Export / Import ------------------ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'studydeck-backup-' + toYMD(new Date()) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup exported');
+}
+function triggerImport() { document.getElementById('importFile').click(); }
+document.getElementById('importFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const data = JSON.parse(text);
+    if (!confirm('Replace ALL current data with this backup?')) return;
+    state = { ...structuredClone(defaultState), ...data };
+    save();
+    applyTheme();
+    renderView(activeView);
+    toast('Data imported');
+  } catch (err) {
+    toast('Invalid backup file');
+  }
+});
+
+/* ------------------ Events / wiring ------------------ */
+document.querySelectorAll('.nav-item[data-view]').forEach(b => {
+  b.onclick = () => setView(b.dataset.view);
+});
+document.getElementById('addAssignmentBtn').onclick = openNewModal;
+document.getElementById('addAssignmentBtn2').onclick = openNewModal;
+document.getElementById('importSchoologyBtn').onclick = openImportModal;
+document.getElementById('importSchoologyBtn2').onclick = openImportModal;
+document.getElementById('saveAssignBtn').onclick = saveFromModal;
+document.querySelectorAll('[data-close]').forEach(b => {
+  b.onclick = () => b.closest('.modal-backdrop').classList.remove('open');
+});
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', (e) => {
+    if (e.target === m) m.classList.remove('open');
+  });
+});
+
+document.getElementById('fetchIcalBtn').onclick = fetchIcalUrl;
+document.getElementById('parseIcalBtn').onclick = parseAndImport;
+document.getElementById('confirmImportBtn').onclick = confirmImport;
+
+// Google sync buttons (in import modal and in settings)
+document.getElementById('modalSyncGoogleBtn').onclick = () => {
+  if (!state.googleApiKey || !state.googleCalId) {
+    toast('Configure Google bridge in Settings first');
+    document.getElementById('modalImport').classList.remove('open');
+    setView('settings');
+    return;
+  }
+  document.getElementById('modalImport').classList.remove('open');
+  fetchGoogleCalendar();
+};
+document.getElementById('modalOpenGoogleSettings').onclick = () => {
+  document.getElementById('modalImport').classList.remove('open');
+  setView('settings');
+};
+document.getElementById('openGuideFromSettings')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  setView('guide');
+});
+document.getElementById('saveGoogleBtn').onclick = () => {
+  state.googleApiKey = document.getElementById('googleApiKey').value.trim();
+  state.googleCalId  = document.getElementById('googleCalId').value.trim();
+  save();
+  toast('Google credentials saved');
+};
+document.getElementById('syncGoogleBtn').onclick = () => {
+  state.googleApiKey = document.getElementById('googleApiKey').value.trim();
+  state.googleCalId  = document.getElementById('googleCalId').value.trim();
+  save();
+  fetchGoogleCalendar();
+};
+
+// Apps Script bridge
+document.getElementById('saveAppsScriptBtn').onclick = () => {
+  state.appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
+  save();
+  toast('Apps Script URL saved');
+};
+document.getElementById('syncAppsScriptBtn').onclick = () => {
+  state.appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
+  save();
+  fetchAppsScript();
+};
+document.getElementById('modalSyncAppsScriptBtn').onclick = () => {
+  if (!state.appsScriptUrl) {
+    toast('Configure Apps Script bridge in Settings first');
+    document.getElementById('modalImport').classList.remove('open');
+    setView('settings');
+    return;
+  }
+  document.getElementById('modalImport').classList.remove('open');
+  fetchAppsScript();
+};
+document.getElementById('modalOpenAppsScriptSettings').onclick = () => {
+  document.getElementById('modalImport').classList.remove('open');
+  setView('settings');
+};
+document.getElementById('openGuideFromSettings2')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  setView('guide');
+});
+
+// Fail log buttons
+document.getElementById('clearLogBtn').onclick = () => {
+  askConfirm({
+    title: 'Clear fail log?',
+    body: 'Deletes all log entries. This won\'t affect your assignments or sync settings.',
+    okText: 'Clear log',
+    onOk: () => {
+      state.failLog = [];
+      save();
+      renderFailLog();
+      toast('Log cleared');
+    }
+  });
+};
+document.getElementById('copyLogBtn').onclick = () => {
+  const log = state.failLog || [];
+  if (log.length === 0) { toast('Log is empty'); return; }
+  const text = log.map(e =>
+    `[${new Date(e.timestamp).toISOString()}] [${e.source}] ${e.level.toUpperCase()}: ${e.title}\n${e.details}\n${'─'.repeat(60)}`
+  ).join('\n');
+  navigator.clipboard.writeText(text).then(
+    () => toast(`Copied ${log.length} entries`),
+    () => toast('Copy failed — your browser may block clipboard access')
+  );
+};
+
+// Stats range selector
+document.querySelectorAll('#statsRange button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#statsRange button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    statsRange = b.dataset.range;
+    renderStats();
+  };
+});
+document.getElementById('statsClassFilter').onchange = (e) => {
+  statsClassId = e.target.value;
+  renderStats();
+};
+
+// Calendar: add task for the currently selected day
+document.getElementById('calAddForDay').onclick = () => {
+  openNewModal();
+  document.getElementById('f_dueDate').value = selectedCalDate;
+};
+
+// Guide navigation
+document.getElementById('openImportFromGuide').onclick = openImportModal;
+document.getElementById('openFullGuide').onclick = (e) => {
+  e.preventDefault();
+  document.getElementById('modalImport').classList.remove('open');
+  setView('guide');
+};
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-goto-method2]');
+  if (t) {
+    e.preventDefault();
+    document.getElementById('method2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+// Filter bar
+document.querySelectorAll('#filterBar .filter-chip').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#filterBar .filter-chip').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    filterMode = b.dataset.filter;
+    renderTasks();
+  };
+});
+document.getElementById('searchInput').oninput = (e) => {
+  searchQuery = e.target.value;
+  renderTasks();
+};
+
+// Calendar
+document.getElementById('calPrev').onclick = () => {
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth()-1, 1);
+  renderCalendar();
+};
+document.getElementById('calNext').onclick = () => {
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth()+1, 1);
+  renderCalendar();
+};
+
+// Pomodoro
+document.getElementById('pomoStart').onclick = pomoStart;
+document.getElementById('pomoPause').onclick = pomoPause;
+document.getElementById('pomoReset').onclick = pomoReset;
+document.getElementById('pomoSkip').onclick = pomoSkip;
+['pomoFocusMin','pomoBreakMin','pomoLongEvery','pomoLongMin'].forEach(id => {
+  document.getElementById(id).onchange = (e) => {
+    const key = id === 'pomoFocusMin' ? 'focusMin'
+              : id === 'pomoBreakMin' ? 'breakMin'
+              : id === 'pomoLongEvery' ? 'longEvery'
+              : 'longMin';
+    state.pomodoro[key] = Math.max(1, parseInt(e.target.value) || 1);
+    save();
+    if (!pomoState.running) {
+      pomoState.total = (pomoState.mode==='focus' ? state.pomodoro.focusMin : pomoState.mode==='long' ? state.pomodoro.longMin : state.pomodoro.breakMin) * 60;
+      pomoState.remaining = pomoState.total;
+      updatePomoDisplay();
+    }
+  };
+});
+
+// Settings
+document.getElementById('saveProfile').onclick = () => {
+  state.profile.name = document.getElementById('settingsName').value.trim();
+  save(); toast('Saved'); renderDashboard();
+};
+document.querySelectorAll('[data-theme-pick]').forEach(b => {
+  b.onclick = () => { state.theme = b.dataset.themePick; save(); applyTheme(); };
+});
+document.querySelectorAll('[data-accent-pick]').forEach(b => {
+  b.onclick = () => { state.accent = b.dataset.accentPick; save(); applyTheme(); };
+});
+document.getElementById('enableNotifs').onclick = enableNotifications;
+document.getElementById('addClassBtn').onclick = () => {
+  const name = document.getElementById('newClassName').value.trim();
+  if (!name) { toast('Class name required'); return; }
+  const color = document.getElementById('newClassColor').value;
+  state.classes.push({ id: uid(), name, color });
+  document.getElementById('newClassName').value = '';
+  save(); renderSettings(); renderClassesSidebar();
+};
+document.getElementById('saveIcalUrl').onclick = () => {
+  state.savedIcalUrl = document.getElementById('savedIcalUrl').value.trim();
+  save(); toast('URL saved');
+};
+document.getElementById('syncNow').onclick = async () => {
+  if (!state.savedIcalUrl) { toast('Save a URL first'); return; }
+  document.getElementById('icalUrlInput').value = state.savedIcalUrl;
+  openImportModal();
+  await fetchIcalUrl();
+};
+
+// Sidebar buttons
+document.getElementById('themeToggle').onclick = () => {
+  const order = ['light','dark','auto'];
+  const idx = order.indexOf(state.theme);
+  state.theme = order[(idx+1) % order.length];
+  save(); applyTheme(); toast('Theme: ' + state.theme);
+};
+document.getElementById('exportBtn').onclick = exportData;
+document.getElementById('exportBtn2').onclick = exportData;
+document.getElementById('importBtn').onclick = triggerImport;
+document.getElementById('importBtn2').onclick = triggerImport;
+document.getElementById('deletePastBtn').onclick = deletePastEvents;
+document.getElementById('deleteByClassBtn').onclick = deleteByClass;
+document.getElementById('wipeBtn').onclick = () => {
+  askConfirm({
+    title: 'Wipe all data?',
+    body: 'This will delete <b>every</b> assignment, class, focus session, and setting.<br>Export a backup first if you want to keep it.',
+    okText: 'Wipe everything',
+    onOk: () => {
+      localStorage.removeItem(LS_KEY);
+      state = structuredClone(defaultState);
+      applyTheme();
+      renderView('dashboard');
+      toast('All data wiped');
+    }
+  });
+};
+// Allow clicking backdrop to close confirm modal
+document.getElementById('modalConfirm').addEventListener('click', (e) => {
+  if (e.target.id === 'modalConfirm') e.currentTarget.classList.remove('open');
+});
+
+// Reminders every minute
+setInterval(checkReminders, 60000);
+
+// React to system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (state.theme === 'auto') applyTheme();
+});
+
+// File protocol banner wiring
+document.getElementById('showServerHelp')?.addEventListener('click', () => {
+  setView('server');
+});
+document.getElementById('dismissBanner')?.addEventListener('click', () => {
+  document.getElementById('fileBanner')?.classList.add('hidden');
+});
+
+/* ------------------ Boot ------------------ */
+applyTheme();
+initFileProtocolUI();
+setView('dashboard');
+checkReminders();
+updateFailLogBadge();
+</script>
+</body>
+</html>
