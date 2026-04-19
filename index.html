@@ -1130,9 +1130,9 @@
           <li><b>Create the Apps Script.</b>
             Go to <a href="https://script.google.com" target="_blank">script.google.com</a> → <b>New project</b>. Delete any sample code and paste:
             <div class="guide-code" style="white-space:pre; font-size:11.5px; line-height:1.5;">function doGet() {
-  const calId = "b00bjq04ro7idicti1o6oce21odk43j7@import.calendar.google.com";
+  const calId = "<b>PASTE_YOUR_CALENDAR_ID_HERE</b>";
   const calendar = CalendarApp.getCalendarById(calId);
-  
+
   if (!calendar) {
     return ContentService.createTextOutput(JSON.stringify({error: "Calendar not found. Check the ID."}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1140,20 +1140,20 @@
 
   // Look from 1 month ago to 1 year in the future to be safe
   const start = new Date();
-  start.setMonth(start.getMonth() - 1); 
+  start.setMonth(start.getMonth() - 1);
   const end = new Date();
   end.setFullYear(end.getFullYear() + 1);
-  
+
   const events = calendar.getEvents(start, end);
-  
-  const output = events.map(e => ({
+
+  const output = events.map(e =&gt; ({
     title: e.getTitle(),
     start: e.getStartTime(),
     end: e.getEndTime(),
     description: e.getDescription(),
     location: e.getLocation()
   }));
-  
+
   return ContentService.createTextOutput(JSON.stringify(output))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -1167,7 +1167,6 @@ function testPermissions() {
   } else {
     Logger.log("Failed to find calendar. Check the ID.");
   }
-}
 }</div>
             Replace <code>PASTE_YOUR_CALENDAR_ID_HERE</code> with the ID you copied.
           </li>
