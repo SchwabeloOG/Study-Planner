@@ -743,6 +743,7 @@
           <p class="page-sub" id="dashboardDate"></p>
         </div>
         <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" id="resetAllBtn" title="Delete all data and start fresh">🔄 Reset</button>
           <button class="btn btn-outline" id="importSchoologyBtn">📥 Import from Schoology</button>
           <button class="btn btn-primary" id="addAssignmentBtn">＋ New assignment</button>
         </div>
@@ -980,78 +981,20 @@
         </div>
 
         <div class="card">
-          <h3 style="margin-top:0;">🎓 Schoology sync</h3>
+          <h3 style="margin-top:0;">📥 iCal Import</h3>
           <p class="help-text" style="margin-bottom:12px;">
-            Two sync methods — pick whichever works. Google Calendar bridge is the reliable one (no CORS issues).
-            <a href="#" id="openGuideFromSettings" class="link-btn">See full setup guide →</a>
+            Import your assignments from Schoology using the iCal feed.
+            <a href="#" id="openGuideFromSettings" class="link-btn">Full setup guide →</a>
           </p>
-
-          <details open style="border:1px solid var(--accent); border-radius:8px; padding:12px; margin-bottom:12px; background: var(--accent-soft);">
-            <summary style="cursor:pointer; font-weight:700; font-size:13px; color:var(--accent);">
-              ⭐⭐ Apps Script bridge (easiest, most reliable)
-            </summary>
-            <div style="margin-top:12px;">
-              <p class="help-text" style="margin-bottom:10px;">
-                A tiny Google Apps Script acts as a bridge — no API key needed, no CORS issues.
-                <a href="#" id="openGuideFromSettings2" class="link-btn">Full setup →</a>
-              </p>
-              <div class="form-group">
-                <label class="form-label">Apps Script Web App URL</label>
-                <input type="text" class="form-input" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/..../exec">
-                <div class="help-text">Ends in <code>/exec</code>. From Deploy → New deployment → Web app → copy URL.</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="btn btn-ghost btn-sm" id="saveAppsScriptBtn">Save</button>
-                <button class="btn btn-primary btn-sm" id="syncAppsScriptBtn">🔄 Sync via Apps Script</button>
-              </div>
-            </div>
-          </details>
-
-          <details style="border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px;">
-            <summary style="cursor:pointer; font-weight:600; font-size:13px; color:var(--accent);">
-              Google Calendar API (alternative)
-            </summary>
-            <div style="margin-top:12px;">
-              <p class="help-text" style="margin-bottom:10px;">
-                In Google Calendar, <b>Settings → Add calendar → From URL</b>, paste your Schoology iCal URL.
-                Make that calendar <b>public</b>. Then get a free Google API key at
-                <a href="https://console.cloud.google.com/apis/credentials" target="_blank">console.cloud.google.com/apis/credentials</a>
-                with the Calendar API enabled.
-              </p>
-              <div class="form-group">
-                <label class="form-label">Google API key</label>
-                <input type="text" class="form-input" id="googleApiKey" placeholder="AIza...">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Public Calendar ID</label>
-                <input type="text" class="form-input" id="googleCalId" placeholder="abc123@group.calendar.google.com">
-                <div class="help-text">Get this from Google Calendar → Calendar Settings → "Integrate calendar" → Calendar ID.</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="btn btn-ghost btn-sm" id="saveGoogleBtn">Save</button>
-                <button class="btn btn-primary btn-sm" id="syncGoogleBtn">🔄 Sync from Google</button>
-              </div>
-            </div>
-          </details>
-
-          <details style="border:1px solid var(--border); border-radius:8px; padding:12px;">
-            <summary style="cursor:pointer; font-weight:600; font-size:13px;">
-              Direct iCal URL (may hit CORS block)
-            </summary>
-            <div style="margin-top:12px;">
-              <p class="help-text" style="margin-bottom:10px;">
-                In Schoology: Calendar → ≡ menu → "iCal Feed". Works only if your school doesn't block cross-origin requests.
-              </p>
-              <div class="form-group">
-                <label class="form-label">Saved iCal URL</label>
-                <input type="text" class="form-input" id="savedIcalUrl" placeholder="https://schoology.com/…/schoology.ics">
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button class="btn btn-ghost btn-sm" id="saveIcalUrl">Save URL</button>
-                <button class="btn btn-primary btn-sm" id="syncNow">🔄 Sync iCal</button>
-              </div>
-            </div>
-          </details>
+          <div class="form-group">
+            <label class="form-label">Schoology iCal URL</label>
+            <input type="text" class="form-input" id="savedIcalUrl" placeholder="https://schoology.com/…/schoology.ics or webcal://...">
+            <div class="help-text">From Schoology: Calendar → ≡ menu → "iCal Feed"</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" id="saveIcalUrl">Save URL</button>
+            <button class="btn btn-primary btn-sm" id="syncNow">🔄 Sync now</button>
+          </div>
         </div>
 
         <div class="card">
@@ -1087,9 +1030,22 @@
         <div class="card">
           <h3 style="margin-top:0;">Data</h3>
           <p class="help-text">Your data lives in this browser's local storage. Export it as a backup.</p>
-          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-            <button class="btn btn-outline btn-sm" id="exportBtn2">Export backup (.json)</button>
-            <button class="btn btn-outline btn-sm" id="importBtn2">Import backup</button>
+          <div style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:600; margin-bottom:8px; font-size:13px;">Full backup</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" id="exportBtn2">Export</button>
+              <button class="btn btn-outline btn-sm" id="importBtn2">Import</button>
+            </div>
+          </div>
+          <div style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:600; margin-bottom:8px; font-size:13px;">Classes only</div>
+            <div class="help-text" style="margin-bottom:8px; font-size:12px;">Export your class list to restore later without re-importing all events.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" id="exportClassesBtn">Export</button>
+              <button class="btn btn-outline btn-sm" id="importClassesBtn">Import</button>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
             <button class="btn btn-danger btn-sm" id="wipeBtn">Wipe all data</button>
           </div>
         </div>
@@ -1438,61 +1394,48 @@ function testPermissions() {
 <div class="modal-backdrop" id="modalImport">
   <div class="modal">
     <button class="modal-close" data-close>&times;</button>
-    <h3 class="modal-title">Import from Schoology</h3>
+    <h3 class="modal-title">Import from iCal</h3>
     <p class="help-text" style="margin-bottom:14px;">
-      Three methods. Google bridge is most reliable. <a href="#" id="openFullGuide" class="link-btn">See full guide →</a>
+      Import your assignments from Schoology using the iCal feed. <a href="#" id="openFullGuide" class="link-btn">Full guide →</a>
     </p>
 
-    <div style="padding: 10px 12px; background: var(--accent-soft); border-radius:8px; margin-bottom:10px; border:1px solid var(--accent);">
-      <div style="font-weight:700; font-size:13px; margin-bottom:6px;">⭐⭐ Apps Script bridge (easiest)</div>
-      <div class="help-text" style="margin-bottom:8px;">No API key, no CORS issues. Set up once in Settings.</div>
-      <button class="btn btn-primary btn-sm" id="modalSyncAppsScriptBtn">🔄 Sync via Apps Script</button>
-      <button class="btn btn-ghost btn-sm" id="modalOpenAppsScriptSettings">Configure</button>
-    </div>
-
-    <div style="padding: 10px 12px; background: var(--bg-soft); border-radius:8px; margin-bottom:16px;">
-      <div style="font-weight:600; font-size:13px; margin-bottom:6px;">Google Calendar API</div>
-      <div class="help-text" style="margin-bottom:8px;">Alternative — needs API key + public calendar.</div>
-      <button class="btn btn-outline btn-sm" id="modalSyncGoogleBtn">🔄 Sync from Google Calendar</button>
-      <button class="btn btn-ghost btn-sm" id="modalOpenGoogleSettings">Configure</button>
-    </div>
-
     <div class="import-help">
-      <details>
-        <summary>Step-by-step: where to find your iCal URL in Schoology</summary>
+      <details open>
+        <summary>Where to find your iCal URL in Schoology</summary>
         <div class="content">
           <ol>
             <li>Log in to Schoology on a computer.</li>
             <li>Click the <b>Calendar</b> icon in the top bar.</li>
             <li>Look at the <b>bottom-right corner</b> for an <b>iCal Feed</b> link (sometimes under ≡ or a gear icon).</li>
-            <li>Copy the URL it shows — it'll look like <code>https://...schoology.com/iCal?...</code></li>
+            <li>Copy the URL — it'll look like <code>https://...schoology.com/iCal?...</code> or <code>webcal://...</code></li>
             <li>Paste below.</li>
           </ol>
         </div>
       </details>
       <details>
-        <summary>If "Fetch feed" fails — how to use Option 2</summary>
+        <summary>If "Fetch feed" fails with CORS error</summary>
         <div class="content">
           <ol>
             <li>Paste your iCal URL into your browser's address bar and press Enter.</li>
             <li>If the browser shows text starting with <code>BEGIN:VCALENDAR</code>, select all and copy.</li>
             <li>If it downloads a .ics file, open it with Notepad/TextEdit and copy everything.</li>
-            <li>Paste into the Option 2 box below and click <b>Parse &amp; import</b>.</li>
+            <li>Paste into the "Paste .ics contents" box below and click <b>Parse &amp; import</b>.</li>
           </ol>
         </div>
       </details>
     </div>
+
     <div class="form-group">
-      <label class="form-label">Option 1 — iCal feed URL</label>
-      <input type="text" class="form-input" id="icalUrlInput" placeholder="https://schoology.com/iCal?code=…">
-      <div class="help-text">Tries to fetch directly. If your school blocks cross-origin requests, use Option 2 instead.</div>
+      <label class="form-label">iCal feed URL</label>
+      <input type="text" class="form-input" id="icalUrlInput" placeholder="https://schoology.com/iCal?code=… or webcal://…">
+      <div class="help-text">Tries to fetch directly. If your school blocks it, use the fallback option below.</div>
     </div>
     <button class="btn btn-primary btn-sm" id="fetchIcalBtn" style="margin-bottom: 18px;">Fetch feed</button>
 
     <div class="form-group">
-      <label class="form-label">Option 2 — Paste .ics contents</label>
+      <label class="form-label">Paste .ics contents (fallback)</label>
       <textarea class="form-textarea" id="icalTextInput" style="min-height:140px; font-family: ui-monospace, monospace; font-size:12px;" placeholder="BEGIN:VCALENDAR..."></textarea>
-      <div class="help-text">Open the .ics URL in your browser, select all, copy and paste here.</div>
+      <div class="help-text">If fetch fails, copy the .ics file contents and paste here.</div>
     </div>
 
     <div style="display:flex; gap:8px; justify-content:flex-end;">
@@ -1528,8 +1471,9 @@ function testPermissions() {
   </div>
 </div>
 
-<!-- Hidden file input -->
+<!-- Hidden file inputs -->
 <input type="file" id="importFile" accept="application/json" style="display:none;">
+<input type="file" id="importClassesFile" accept="application/json" style="display:none;">
 
 <div class="toast" id="toast"></div>
 
@@ -1557,9 +1501,6 @@ const defaultState = {
     history: [] // {date, taskId, minutes, type}
   },
   savedIcalUrl: '',
-  googleApiKey: '',
-  googleCalId: '',
-  appsScriptUrl: '',
   activity: {}, // YYYY-MM-DD -> { completed: n, focusMin: n }
   failLog: [], // { id, timestamp, source, title, level, details }
 };
@@ -2414,6 +2355,29 @@ function pomoComplete(skipped=false) {
   if (activeView === 'pomodoro') renderPomodoro();
 }
 
+function resetAll() {
+  askConfirm({
+    title: 'Reset all data?',
+    body: 'This will delete <b>all assignments, classes, focus history, and settings</b>.<br>This action cannot be undone.',
+    okText: 'Reset everything',
+    onOk: () => {
+      // Clear all assignments and classes
+      state.assignments = [];
+      state.classes = [];
+      // Reset other state to defaults
+      state.pomodoro = structuredClone(defaultState.pomodoro);
+      state.profile = structuredClone(defaultState.profile);
+      state.theme = defaultState.theme;
+      state.accent = defaultState.accent;
+      state.notificationsEnabled = defaultState.notificationsEnabled;
+      state.savedIcalUrl = '';
+      save();
+      renderView('dashboard');
+      toast('All data reset');
+    }
+  });
+}
+
 /* ------------------ Stats ------------------ */
 let statsRange = 'week';
 let statsClassId = 'all';
@@ -2527,12 +2491,8 @@ function bumpActivity(type, minutes=0) {
 function renderSettings() {
   document.getElementById('settingsName').value = state.profile.name || '';
   document.getElementById('savedIcalUrl').value = state.savedIcalUrl || '';
-  const gk = document.getElementById('googleApiKey');
-  const gi = document.getElementById('googleCalId');
-  const as = document.getElementById('appsScriptUrl');
-  if (gk) gk.value = state.googleApiKey || '';
-  if (gi) gi.value = state.googleCalId || '';
-  if (as) as.value = state.appsScriptUrl || '';
+  const iu = document.getElementById('savedIcalUrl');
+  if (iu) iu.value = state.savedIcalUrl || '';
   renderClassManager();
   renderBulkClassList();
   // notif status
@@ -2704,8 +2664,15 @@ function openImportModal() {
 }
 
 async function fetchIcalUrl() {
-  const url = document.getElementById('icalUrlInput').value.trim();
+  let url = document.getElementById('icalUrlInput').value.trim();
   if (!url) { toast('Paste a URL first'); return; }
+
+  // Convert webcal:// to https://
+  if (url.startsWith('webcal://')) {
+    url = 'https://' + url.slice(9);
+    document.getElementById('icalUrlInput').value = url;
+  }
+
   const result = document.getElementById('importResult');
   result.innerHTML = '⏳ Fetching...';
 
@@ -2838,44 +2805,49 @@ function parseIcal(text) {
 // Extract likely class name from a Schoology/Google Calendar event, trying many patterns.
 // Returns { className, cleanTitle } — cleanTitle strips the class prefix from the summary.
 function detectClass(ev) {
-  const tryPatterns = [];
   const s = (ev.summary || '').trim();
   const desc = (ev.description || '').trim();
   const loc = (ev.location || '').trim();
 
-  // 1. "[ClassName] title"
-  let m = s.match(/^\[([^\]]+)\]\s*(.*)$/);
-  if (m) return { className: m[1].trim(), cleanTitle: m[2].trim() || s };
+  // 1. CATEGORIES (if present)
+  if (ev.categories) {
+    const cats = ev.categories.split(',').map(c => c.trim()).filter(Boolean);
+    if (cats.length > 0) {
+      return { className: cats[0], cleanTitle: s };
+    }
+  }
 
-  // 2. Schoology RSS-style: Title is plain, description has "Course: X"
-  const courseMatch = desc.match(/(?:course|class|section)\s*[:\-]\s*([^\n\r]+)/i);
-  if (courseMatch) return { className: courseMatch[1].trim(), cleanTitle: s };
-
-  // 3. "ClassName: Actual title" — most common Schoology pattern
-  m = s.match(/^([^:]+):\s*(.+)$/);
+  // 2. Look for common class name patterns in the SUMMARY
+  // Pattern: "ClassName" followed by colon (but not if preceded by # or digits like "1-A:")
+  let m = s.match(/^(?!#|1-|2-|3-)([A-Za-z][^:]*?):\s*(.+)$/);
   if (m) {
     const prefix = m[1].trim();
-    // Only take as class name if the prefix looks reasonable (<= 60 chars, not a date/time)
-    if (prefix.length <= 60 && !/^\d{1,2}[:\/\-]\d{1,2}/.test(prefix)) {
+    // Only take as class name if it looks like a real course name (not too short, not a timestamp)
+    if (prefix.length > 2 && prefix.length <= 60 && !/^\d{1,2}[:\/\-]\d{1,2}/.test(prefix) && !/^#/.test(prefix)) {
       return { className: prefix, cleanTitle: m[2].trim() };
     }
   }
 
-  // 4. "ClassName - Actual title"
-  m = s.match(/^(.{2,50}?)\s+[\-–—]\s+(.+)$/);
+  // 3. "[ClassName] title"
+  m = s.match(/^\[([^\]]+)\]\s*(.*)$/);
+  if (m) return { className: m[1].trim(), cleanTitle: m[2].trim() || s };
+
+  // 4. "ClassName - Actual title" (with dash/hyphen)
+  m = s.match(/^([A-Za-z][^-–—]*?)\s+[\-–—]\s+(.+)$/);
   if (m) {
     const prefix = m[1].trim();
-    if (!/^\d/.test(prefix)) return { className: prefix, cleanTitle: m[2].trim() };
+    if (prefix.length > 2 && prefix.length <= 60 && !/^\d/.test(prefix)) {
+      return { className: prefix, cleanTitle: m[2].trim() };
+    }
   }
 
-  // 5. Location often has course code
+  // 5. Description has "Course: X" or similar
+  const courseMatch = desc.match(/(?:course|class|section)\s*[:\-]\s*([^\n\r]+)/i);
+  if (courseMatch) return { className: courseMatch[1].trim(), cleanTitle: s };
+
+  // 6. Location often has course code
   if (loc && loc.length <= 60 && !/https?:\/\//.test(loc)) {
     return { className: loc, cleanTitle: s };
-  }
-
-  // 6. CATEGORIES
-  if (ev.categories) {
-    return { className: ev.categories.split(',')[0].trim(), cleanTitle: s };
   }
 
   // 7. ORGANIZER CN
@@ -2883,6 +2855,7 @@ function detectClass(ev) {
     return { className: ev.organizer.trim(), cleanTitle: s };
   }
 
+  // Default: no class detected
   return { className: null, cleanTitle: s };
 }
 function unescapeIcal(s) {
@@ -2946,12 +2919,8 @@ function importIcalEvents(enriched, classMapping) {
     const extId = 'ical:' + (ev.uid || (ev.summary + (ev.dtstart?.date || '')));
     const existing = state.assignments.find(a => a.extId === extId);
     if (existing) {
-      // Update due date/title in case Schoology changed it
-      existing.title = ev.cleanTitle || ev.summary;
-      existing.dueDate = ev.dtstart?.date || existing.dueDate;
-      existing.dueTime = ev.dtstart?.time || existing.dueTime;
-      if (ev.description && !existing.notes) existing.notes = ev.description;
-      updated++;
+      // Duplicate detected — skip it (keep the first imported one)
+      skipped++;
       return;
     }
     state.assignments.push({
@@ -3433,7 +3402,19 @@ function exportData() {
   URL.revokeObjectURL(url);
   toast('Backup exported');
 }
+function exportClasses() {
+  const classData = JSON.stringify(state.classes, null, 2);
+  const blob = new Blob([classData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'studydeck-classes-' + toYMD(new Date()) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Classes exported');
+}
 function triggerImport() { document.getElementById('importFile').click(); }
+function triggerImportClasses() { document.getElementById('importClassesFile').click(); }
 document.getElementById('importFile').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -3448,6 +3429,33 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     toast('Data imported');
   } catch (err) {
     toast('Invalid backup file');
+  }
+});
+
+document.getElementById('importClassesFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const imported = JSON.parse(text);
+    if (!Array.isArray(imported)) {
+      toast('Invalid classes file');
+      return;
+    }
+    if (!confirm(`Import ${imported.length} class(es) from this file?`)) return;
+    // Merge classes: keep existing ones, add new ones
+    imported.forEach(imp => {
+      const existing = state.classes.find(c => c.id === imp.id);
+      if (!existing) {
+        state.classes.push(imp);
+      }
+    });
+    save();
+    renderClassesSidebar();
+    renderSettings();
+    toast(`Imported ${imported.length} classes`);
+  } catch (err) {
+    toast('Invalid classes file');
   }
 });
 
@@ -3473,63 +3481,11 @@ document.getElementById('fetchIcalBtn').onclick = fetchIcalUrl;
 document.getElementById('parseIcalBtn').onclick = parseAndImport;
 document.getElementById('confirmImportBtn').onclick = confirmImport;
 
-// Google sync buttons (in import modal and in settings)
-document.getElementById('modalSyncGoogleBtn').onclick = () => {
-  if (!state.googleApiKey || !state.googleCalId) {
-    toast('Configure Google bridge in Settings first');
-    document.getElementById('modalImport').classList.remove('open');
-    setView('settings');
-    return;
-  }
-  document.getElementById('modalImport').classList.remove('open');
-  fetchGoogleCalendar();
-};
-document.getElementById('modalOpenGoogleSettings').onclick = () => {
-  document.getElementById('modalImport').classList.remove('open');
-  setView('settings');
-};
+// Old sync methods removed - using iCal only
 document.getElementById('openGuideFromSettings')?.addEventListener('click', (e) => {
   e.preventDefault();
   setView('guide');
 });
-document.getElementById('saveGoogleBtn').onclick = () => {
-  state.googleApiKey = document.getElementById('googleApiKey').value.trim();
-  state.googleCalId  = document.getElementById('googleCalId').value.trim();
-  save();
-  toast('Google credentials saved');
-};
-document.getElementById('syncGoogleBtn').onclick = () => {
-  state.googleApiKey = document.getElementById('googleApiKey').value.trim();
-  state.googleCalId  = document.getElementById('googleCalId').value.trim();
-  save();
-  fetchGoogleCalendar();
-};
-
-// Apps Script bridge
-document.getElementById('saveAppsScriptBtn').onclick = () => {
-  state.appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
-  save();
-  toast('Apps Script URL saved');
-};
-document.getElementById('syncAppsScriptBtn').onclick = () => {
-  state.appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
-  save();
-  fetchAppsScript();
-};
-document.getElementById('modalSyncAppsScriptBtn').onclick = () => {
-  if (!state.appsScriptUrl) {
-    toast('Configure Apps Script bridge in Settings first');
-    document.getElementById('modalImport').classList.remove('open');
-    setView('settings');
-    return;
-  }
-  document.getElementById('modalImport').classList.remove('open');
-  fetchAppsScript();
-};
-document.getElementById('modalOpenAppsScriptSettings').onclick = () => {
-  document.getElementById('modalImport').classList.remove('open');
-  setView('settings');
-};
 document.getElementById('openGuideFromSettings2')?.addEventListener('click', (e) => {
   e.preventDefault();
   setView('guide');
@@ -3683,8 +3639,11 @@ document.getElementById('exportBtn').onclick = exportData;
 document.getElementById('exportBtn2').onclick = exportData;
 document.getElementById('importBtn').onclick = triggerImport;
 document.getElementById('importBtn2').onclick = triggerImport;
+document.getElementById('exportClassesBtn').onclick = exportClasses;
+document.getElementById('importClassesBtn').onclick = triggerImportClasses;
 document.getElementById('deletePastBtn').onclick = deletePastEvents;
 document.getElementById('deleteByClassBtn').onclick = deleteByClass;
+document.getElementById('resetAllBtn').onclick = resetAll;
 document.getElementById('wipeBtn').onclick = () => {
   askConfirm({
     title: 'Wipe all data?',
